@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>우리 마니또</title>
-<meta name="description" content="진행자도 결과를 모르는 비밀 마니또 뽑기">
+<meta name="description" content="아무도 결과를 모르는 비밀 마니또 뽑기">
 <meta property="og:title" content="우리 마니또">
 <meta property="og:description" content="링크를 눌러 참가하고, 내 마니또를 확인하세요">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c4392f'/%3E%3Ctext x='32' y='43' font-size='30' text-anchor='middle' fill='white' font-family='sans-serif'%3E%EB%A7%88%3C/text%3E%3C/svg%3E">
@@ -134,7 +134,7 @@ details.card summary::-webkit-details-marker{display:none}
     <div class="emblem" aria-hidden="true">마</div>
     <div>
       <h1>우리 마니또</h1>
-      <p class="sub">진행자도 결과를 모르는 비밀 뽑기</p>
+      <p class="sub">뽑은 사람도 결과를 모르는 비밀 뽑기</p>
     </div>
   </header>
 
@@ -142,13 +142,13 @@ details.card summary::-webkit-details-marker{display:none}
     <h2>이렇게 진행해요</h2>
     <ol class="flow">
       <li><div><b>참가 등록<span class="who">모두</span></b><span class="d">아래 '참가하기'를 눌러 이름을 쓰고, 나온 메시지를 단톡방에 올려요.</span></div></li>
-      <li><div><b>뽑기<span class="who">진행자</span></b><span class="d">단톡방에 올라온 메시지를 모아 붙여넣고 뽑은 뒤, 결과 링크를 단톡방에 올려요.</span></div></li>
-      <li><div><b>내 마니또 확인<span class="who">모두</span></b><span class="d">결과 링크를 열면 각자 자기 마니또만 보여요. 남의 것은 진행자도 못 열어요.</span></div></li>
+      <li><div><b>뽑기<span class="who">아무나 한 명</span></b><span class="d">모두 올라오면 아무나 한 명이 '뽑기'를 눌러 단톡방 메시지를 붙여넣고, 결과 링크를 올려요. 뽑은 사람도 결과를 몰라서 누가 해도 괜찮아요.</span></div></li>
+      <li><div><b>내 마니또 확인<span class="who">모두</span></b><span class="d">결과 링크를 열면 각자 자기 마니또만 보여요. 남의 봉투는 아무도 못 열어요.</span></div></li>
     </ol>
   </section>
 
   <a class="btn primary" href="#join">참가하기</a>
-  <a class="btn secondary" href="#host">진행자로 뽑기</a>
+  <a class="btn secondary" href="#host">모두 등록했으면 뽑기</a>
 
   <details class="card">
     <summary>결과 링크가 제대로 안 열리나요?</summary>
@@ -201,17 +201,18 @@ details.card summary::-webkit-details-marker{display:none}
       <h2>이 휴대폰에 저장된 열쇠</h2>
       <div class="chips" id="joinKeyList"></div>
     </section>
+    <a class="btn secondary" href="#host">모두 올라왔으면 뽑으러 가기</a>
     <button class="textbtn" id="joinAnother" type="button">다른 이름으로 하나 더 등록</button>
   </div>
 </main>
 
-<!-- 진행자 뽑기 -->
+<!-- 뽑기 -->
 <main class="wrap" id="host" hidden>
   <a class="back" href="#">← 처음으로</a>
   <header class="hero">
     <div class="emblem" aria-hidden="true">2</div>
     <div>
-      <div class="eyebrow">2단계 · 진행자</div>
+      <div class="eyebrow">2단계 · 아무나 한 명</div>
       <h1>마니또 뽑기</h1>
     </div>
   </header>
@@ -239,7 +240,7 @@ details.card summary::-webkit-details-marker{display:none}
       </div>
       <p class="err" id="hostErr" hidden></p>
       <button class="primary" id="hostDraw" type="button" disabled>마니또 뽑기</button>
-      <p class="muted small" style="text-align:center">뽑아도 결과는 진행자 화면에 나오지 않아요</p>
+      <p class="muted small" style="text-align:center">뽑은 사람 화면에도 결과는 나오지 않아요</p>
     </section>
   </div>
 
@@ -250,7 +251,8 @@ details.card summary::-webkit-details-marker{display:none}
     </div>
     <section class="card">
       <h2>결과 링크를 단톡방에 올리세요</h2>
-      <p class="small muted">링크 하나에 7개의 봉투가 들어 있고, 봉투는 각자의 열쇠로만 열려요. 진행자인 나도 내 봉투만 열려요.</p>
+      <p class="small muted">링크 하나에 7개의 봉투가 들어 있고, 봉투는 각자의 열쇠로만 열려요. 뽑은 나도 내 봉투만 열려요.</p>
+      <div class="tip"><span aria-hidden="true">☝️</span><p><b>결과 링크는 한 번만</b> 올려주세요. 혹시 두 명이 동시에 뽑아서 두 개가 올라오면 <b>먼저 올라온 링크</b>를 써요.</p></div>
       <button class="primary" id="hostCopy" type="button">결과 메시지 복사</button>
       <a class="btn" id="hostOpen" href="#">내 마니또 확인하기</a>
     </section>
@@ -466,7 +468,7 @@ $("joinCopy").onclick=e=>copy(`[마니또 참가] ${joinCurrent.name}\n${regCode
 $("joinBackup").onclick=e=>copy(`[마니또 열쇠 - 나만 보관] ${joinCurrent.name}\n${backupCode(joinCurrent)}`,e.currentTarget);
 $("joinAnother").onclick=()=>{$("joinName").value="";showJoin(null);$("joinName").focus();};
 
-/* --- 진행자 --- */
+/* --- 뽑기 --- */
 let hostParts=[];
 function parseHostText(){
   const found=new Map(), bad=[];
