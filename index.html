@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>우리 마니또</title>
+<meta name="description" content="진행자도 결과를 모르는 비밀 마니또 뽑기">
+<meta property="og:title" content="우리 마니또">
+<meta property="og:description" content="링크를 눌러 참가하고, 내 마니또를 확인하세요">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23c4392f'/%3E%3Ctext x='32' y='43' font-size='30' text-anchor='middle' fill='white' font-family='sans-serif'%3E%EB%A7%88%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: one narrow phone-first column; a wax-sealed envelope is the single focal object */
+:root{
+  --bg:#edeff6; --surface:#ffffff; --sunk:#f4f5fa; --fg:#1a1f36; --muted:#5f6886; --line:#d9deea;
+  --seal:#c4392f; --seal-deep:#9c2a22; --seal-soft:#f7e4e2; --on-seal:#ffffff; --ok:#1f7a58; --ok-soft:#e1f2ea;
+  --env-back:#d3d9e8; --env-front:#e4e8f2; --env-flap:#c9d0e2;
+  --display:"Jua","IBM Plex Sans KR","Apple SD Gothic Neo",system-ui,sans-serif;
+  --body:"IBM Plex Sans KR","Apple SD Gothic Neo",system-ui,-apple-system,sans-serif;
+  --shadow:0 1px 2px rgba(26,31,54,.06),0 8px 24px rgba(26,31,54,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#11141f; --surface:#1a1e2e; --sunk:#141827; --fg:#e9ecf5; --muted:#9ba3bd; --line:#2b3148;
+  --seal:#e05a4e; --seal-deep:#b8433a; --seal-soft:#3a2026; --on-seal:#ffffff; --ok:#52bf93; --ok-soft:#173528;
+  --env-back:#262c42; --env-front:#2f3650; --env-flap:#363e5a; --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:440px;margin:0 auto;padding-block:24px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:16px}
+.stack{display:flex;flex-direction:column;gap:16px}
+p{margin:0}
+h1{font-family:var(--display);font-weight:400;font-size:32px;line-height:1.2;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.3;margin:0}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+a{color:inherit}
+.back{align-self:flex-start;text-decoration:none;color:var(--muted);font-size:14px;padding:4px 0}
+
+.hero{display:flex;gap:14px;align-items:center;padding-block:4px 2px}
+.emblem{flex:none;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 35% 30%,var(--seal),var(--seal-deep));color:var(--on-seal);display:grid;place-items:center;font-family:var(--display);font-size:24px;box-shadow:0 0 0 5px var(--seal-soft)}
+.hero .sub{font-size:14px;color:var(--muted);margin-top:2px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--seal)}
+
+.card{background:var(--surface);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--seal-soft);color:var(--seal);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}
+
+/* flow */
+ol.flow{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;counter-reset:f}
+ol.flow li{display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;counter-increment:f}
+ol.flow li::before{content:counter(f);width:30px;height:30px;border-radius:50%;background:var(--seal);color:var(--on-seal);display:grid;place-items:center;font-family:var(--display);font-size:15px}
+ol.flow b{display:block;font-weight:700}
+ol.flow .who{display:inline-block;font-size:11px;font-weight:700;color:var(--muted);background:var(--sunk);border-radius:6px;padding:1px 6px;margin-left:6px;vertical-align:2px}
+ol.flow span.d{font-size:14px;color:var(--muted)}
+
+label{font-size:13px;color:var(--muted);font-weight:500}
+input,textarea{font:inherit;color:var(--fg);background:var(--sunk);border:1px solid var(--line);border-radius:12px;padding:11px 12px;width:100%;min-width:0}
+textarea{font-size:13px;line-height:1.5;min-height:110px;resize:vertical}
+input:focus,textarea:focus{border-color:var(--seal);outline:none;box-shadow:0 0 0 3px var(--seal-soft)}
+button:focus-visible,a:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:6px}
+.row{display:flex;gap:8px;align-items:center}
+
+button,.btn{font:inherit;cursor:pointer;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:11px 14px;transition:background .15s,transform .1s;text-align:center;text-decoration:none;display:block}
+button:active,.btn:active{transform:scale(.98)}
+button[disabled]{opacity:.45;cursor:default;transform:none}
+.primary{width:100%;background:var(--seal);border-color:var(--seal);color:var(--on-seal);font-weight:700;font-size:16px;padding:15px 16px;border-radius:14px;box-shadow:0 6px 16px color-mix(in srgb,var(--seal) 30%,transparent)}
+.primary:hover{background:var(--seal-deep)}
+.secondary{width:100%;font-weight:700;font-size:16px;padding:14px 16px;border-radius:14px}
+.textbtn{border:0;background:transparent;color:var(--muted);padding:8px;font-size:14px;text-decoration:underline;text-underline-offset:3px;align-self:center}
+.when-preview{font-size:13px;color:var(--seal);font-weight:500}
+.err{font-size:14px;color:var(--seal);background:var(--seal-soft);border-radius:10px;padding:10px 12px}
+.tip{display:flex;gap:10px;font-size:13px;color:var(--muted);background:var(--sunk);border-radius:12px;padding:12px}
+.tip b{color:var(--fg)}
+.done-banner{display:flex;gap:12px;align-items:center;background:var(--ok-soft);color:var(--ok);border-radius:14px;padding:14px 16px;font-weight:500}
+.done-banner b{font-family:var(--display);font-weight:400;font-size:18px;display:block}
+.check{flex:none;width:34px;height:34px;border-radius:50%;background:var(--ok);color:var(--surface);display:grid;place-items:center;font-size:18px;font-weight:700}
+.msg{background:var(--sunk);border-radius:12px;padding:12px;font-size:13px;color:var(--muted);overflow-wrap:anywhere;max-height:84px;overflow:hidden;position:relative}
+.msg b{color:var(--fg);display:block;font-size:14px}
+.msg::after{content:"";position:absolute;inset:auto 0 0 0;height:28px;background:linear-gradient(transparent,var(--sunk))}
+.confirm{display:flex;flex-direction:column;gap:12px;background:var(--seal-soft);border-radius:14px;padding:14px;font-size:14px}
+.btns{display:flex;gap:8px}
+.btns button{flex:1}
+.btns .danger{background:var(--seal);border-color:var(--seal);color:var(--on-seal);font-weight:700}
+details.card summary{cursor:pointer;font-weight:500;list-style:none;display:flex;justify-content:space-between;gap:8px}
+details.card summary::after{content:"+";color:var(--muted);font-size:18px;line-height:1}
+details.card[open] summary::after{content:"−"}
+details.card summary::-webkit-details-marker{display:none}
+.copyfb{min-height:90px}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px 4px 4px;background:var(--sunk);font-size:14px}
+.chip i{font-style:normal;width:24px;height:24px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-family:var(--display);font-size:12px}
+.chip.ok i{background:var(--ok);color:var(--surface)}
+.empty{font-size:14px;color:var(--muted);text-align:center;padding:10px 0;border:1.5px dashed var(--line);border-radius:12px}
+
+/* envelope */
+.stage{position:relative;height:300px;perspective:1000px}
+.stage .hint{position:absolute;top:24px;left:0;right:0;text-align:center;color:var(--muted);font-size:14px;transition:opacity .3s}
+.env{position:absolute;left:0;right:0;bottom:0;height:200px}
+.env-back{position:absolute;inset:0;background:var(--env-back);border-radius:14px}
+.letter{position:absolute;left:14px;right:14px;top:10px;height:182px;background:var(--surface);border-radius:10px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;gap:2px;padding-top:18px;text-align:center;transition:transform .7s cubic-bezier(.2,.8,.2,1) .35s}
+.letter .lbl{font-size:13px;color:var(--muted)}
+.letter .target{font-family:var(--display);font-size:44px;line-height:1.15;color:var(--seal);overflow-wrap:anywhere;padding:0 10px}
+.env-front{position:absolute;left:0;right:0;bottom:0;height:128px;background:var(--env-front);border-radius:0 0 14px 14px;clip-path:polygon(0 0,50% 42%,100% 0,100% 100%,0 100%);display:flex;align-items:flex-end;justify-content:center;padding-bottom:14px;font-size:12px;color:var(--muted);letter-spacing:.08em}
+.flap{position:absolute;left:0;right:0;top:0;height:112px;background:var(--env-flap);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:top;transition:transform .5s ease,z-index 0s .25s;z-index:3;border-radius:14px 14px 0 0}
+.seal{position:absolute;left:50%;top:112px;transform:translate(-50%,-50%);z-index:4;width:78px;height:78px;border-radius:50%;border:0;padding:0;background:radial-gradient(circle at 35% 30%,var(--seal),var(--seal-deep));color:var(--on-seal);font-family:var(--display);font-size:17px;box-shadow:0 0 0 6px var(--seal-soft),0 6px 14px rgba(0,0,0,.18);animation:pulse 2.2s ease-in-out infinite;transition:opacity .25s,transform .25s}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 6px var(--seal-soft),0 6px 14px rgba(0,0,0,.18)}50%{box-shadow:0 0 0 12px var(--seal-soft),0 6px 14px rgba(0,0,0,.18)}}
+.stage.open .hint{opacity:0}
+.stage.open .seal{opacity:0;transform:translate(-50%,-50%) scale(.6);pointer-events:none}
+.stage.open .flap{transform:rotateX(180deg);z-index:0}
+.stage.open .letter{transform:translateY(-104px)}
+.after-open{text-align:center;font-size:13px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.letter,.flap,.seal,.hint{transition:none}.seal{animation:none}}
+
+.segs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.seg{background:var(--sunk);border-radius:12px;padding:10px 4px 8px;text-align:center}
+.seg b{display:block;font-family:var(--display);font-weight:400;font-size:28px;line-height:1.1;font-variant-numeric:tabular-nums}
+.seg span{font-size:12px;color:var(--muted)}
+.revealed-msg{font-family:var(--display);font-size:24px;color:var(--seal);text-align:center;padding:8px 0}
+.ideas{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.foot{text-align:center;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- 처음 화면 -->
+<main class="wrap" id="home" hidden>
+  <header class="hero">
+    <div class="emblem" aria-hidden="true">마</div>
+    <div>
+      <h1>우리 마니또</h1>
+      <p class="sub">진행자도 결과를 모르는 비밀 뽑기</p>
+    </div>
+  </header>
+
+  <section class="card">
+    <h2>이렇게 진행해요</h2>
+    <ol class="flow">
+      <li><div><b>참가 등록<span class="who">모두</span></b><span class="d">아래 '참가하기'를 눌러 이름을 쓰고, 나온 메시지를 단톡방에 올려요.</span></div></li>
+      <li><div><b>뽑기<span class="who">진행자</span></b><span class="d">단톡방에 올라온 메시지를 모아 붙여넣고 뽑은 뒤, 결과 링크를 단톡방에 올려요.</span></div></li>
+      <li><div><b>내 마니또 확인<span class="who">모두</span></b><span class="d">결과 링크를 열면 각자 자기 마니또만 보여요. 남의 것은 진행자도 못 열어요.</span></div></li>
+    </ol>
+  </section>
+
+  <a class="btn primary" href="#join">참가하기</a>
+  <a class="btn secondary" href="#host">진행자로 뽑기</a>
+
+  <details class="card">
+    <summary>결과 링크가 제대로 안 열리나요?</summary>
+    <div class="field">
+      <label for="homePaste">받은 결과 메시지를 통째로 붙여넣으세요</label>
+      <div class="row"><input id="homePaste" autocomplete="off" placeholder="[마니또 결과] ..."><button id="homePasteGo" type="button" style="flex:none">열기</button></div>
+      <p class="err" id="homePasteErr" hidden></p>
+    </div>
+  </details>
+</main>
+
+<!-- 참가 등록 -->
+<main class="wrap" id="join" hidden>
+  <a class="back" href="#">← 처음으로</a>
+  <header class="hero">
+    <div class="emblem" id="joinEmblem" aria-hidden="true">1</div>
+    <div>
+      <div class="eyebrow">1단계 · 모두</div>
+      <h1>참가 등록</h1>
+    </div>
+  </header>
+
+  <section class="card" id="joinNew">
+    <div class="field">
+      <label for="joinName">내 이름</label>
+      <input id="joinName" maxlength="20" autocomplete="off" placeholder="단톡방에서 부르는 이름" enterkeyhint="done">
+    </div>
+    <p class="err" id="joinErr" hidden></p>
+    <button class="primary" id="joinMake" type="button">내 열쇠 만들기</button>
+    <div class="tip"><span aria-hidden="true">🔑</span><p>이 휴대폰에 <b>나만의 열쇠</b>가 저장돼요. 나중에 결과 봉투는 이 열쇠로만 열려요. 열쇠는 어디로도 전송되지 않아요.</p></div>
+  </section>
+
+  <div class="stack" id="joinDone" hidden>
+    <div class="done-banner">
+      <span class="check" aria-hidden="true">✓</span>
+      <div><b id="joinDoneName"></b><span class="small">열쇠가 이 휴대폰에 저장됐어요</span></div>
+    </div>
+    <section class="card">
+      <h2>단톡방에 올리기</h2>
+      <div class="msg" id="joinMsg"></div>
+      <button class="primary" id="joinCopy" type="button">메시지 복사</button>
+      <div class="tip"><span aria-hidden="true">📱</span><p>나중에 결과 링크도 <b>지금 이 휴대폰, 이 앱</b>에서 열어주세요. 다른 기기나 브라우저에서는 열쇠가 없어서 안 열려요.</p></div>
+    </section>
+    <details class="card">
+      <summary>다른 기기에서 열어야 한다면 (열쇠 백업)</summary>
+      <p class="small muted">아래 백업 코드를 <b>나와의 채팅</b>에 저장해 두세요. 결과 링크가 "열쇠를 찾지 못했어요"라고 나오면 이 코드를 붙여넣으면 열려요. <b>다른 사람에게는 보내지 마세요.</b></p>
+      <button id="joinBackup" type="button">백업 코드 복사</button>
+    </details>
+    <section class="card" id="joinOthers" hidden>
+      <h2>이 휴대폰에 저장된 열쇠</h2>
+      <div class="chips" id="joinKeyList"></div>
+    </section>
+    <button class="textbtn" id="joinAnother" type="button">다른 이름으로 하나 더 등록</button>
+  </div>
+</main>
+
+<!-- 진행자 뽑기 -->
+<main class="wrap" id="host" hidden>
+  <a class="back" href="#">← 처음으로</a>
+  <header class="hero">
+    <div class="emblem" aria-hidden="true">2</div>
+    <div>
+      <div class="eyebrow">2단계 · 진행자</div>
+      <h1>마니또 뽑기</h1>
+    </div>
+  </header>
+
+  <div class="stack" id="hostSetup">
+    <section class="card">
+      <div class="field">
+        <label for="hostPaste">단톡방에 올라온 참가 메시지를 붙여넣으세요</label>
+        <textarea id="hostPaste" placeholder="[마니또 참가] 이름&#10;mr...&#10;&#10;여러 개를 한꺼번에 붙여넣어도 돼요"></textarea>
+      </div>
+      <button id="hostMine" type="button" hidden>이 휴대폰에 있는 내 참가 코드 넣기</button>
+    </section>
+
+    <section class="card">
+      <div class="card-head"><h2>참가자</h2><span class="badge" id="hostCount">0명</span></div>
+      <div id="hostList"><p class="empty">아직 확인된 참가자가 없어요</p></div>
+      <p class="err" id="hostWarn" hidden></p>
+    </section>
+
+    <section class="card">
+      <div class="field">
+        <label for="hostReveal">결과 공개 시각</label>
+        <input type="datetime-local" id="hostReveal" value="2026-11-14T18:30">
+        <p class="when-preview" id="hostWhen"></p>
+      </div>
+      <p class="err" id="hostErr" hidden></p>
+      <button class="primary" id="hostDraw" type="button" disabled>마니또 뽑기</button>
+      <p class="muted small" style="text-align:center">뽑아도 결과는 진행자 화면에 나오지 않아요</p>
+    </section>
+  </div>
+
+  <div class="stack" id="hostDone" hidden>
+    <div class="done-banner">
+      <span class="check" aria-hidden="true">✓</span>
+      <div><b>뽑기 완료</b><span class="small" id="hostDoneSub"></span></div>
+    </div>
+    <section class="card">
+      <h2>결과 링크를 단톡방에 올리세요</h2>
+      <p class="small muted">링크 하나에 7개의 봉투가 들어 있고, 봉투는 각자의 열쇠로만 열려요. 진행자인 나도 내 봉투만 열려요.</p>
+      <button class="primary" id="hostCopy" type="button">결과 메시지 복사</button>
+      <a class="btn" id="hostOpen" href="#">내 마니또 확인하기</a>
+    </section>
+    <button class="textbtn" id="hostRedraw" type="button">처음부터 다시 뽑기</button>
+    <div class="confirm" id="hostConfirm" hidden>
+      <p>다시 뽑으면 결과가 완전히 바뀌어요. <b>결과 링크를 아직 단톡방에 올리지 않았을 때만</b> 다시 뽑으세요.</p>
+      <div class="btns">
+        <button id="hostNo" type="button">취소</button>
+        <button class="danger" id="hostYes" type="button">다시 뽑기</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 결과 -->
+<main class="wrap" id="result" hidden>
+  <header class="hero">
+    <div class="emblem" id="rEmblem" aria-hidden="true">마</div>
+    <div>
+      <div class="eyebrow">3단계 · 결과</div>
+      <h1 id="rTitle">마니또 결과 도착</h1>
+    </div>
+  </header>
+
+  <section class="card" id="rLocked" hidden>
+    <h2>이 기기에서 열쇠를 찾지 못했어요</h2>
+    <p class="small muted">참가 등록을 했던 휴대폰과 앱에서 이 링크를 열어주세요. 다른 기기라면 저장해 둔 <b>열쇠 백업 코드</b>를 붙여넣으면 열려요.</p>
+    <div class="row"><input id="rBackup" autocomplete="off" placeholder="[마니또 열쇠] ..."><button id="rBackupGo" type="button" style="flex:none">열기</button></div>
+    <p class="err" id="rErr" hidden></p>
+  </section>
+
+  <section class="card" id="rChoose" hidden>
+    <h2>누구의 봉투를 열까요?</h2>
+    <p class="small muted">이 기기에 열쇠가 여러 개 있어요.</p>
+    <div class="chips" id="rChooseList"></div>
+  </section>
+
+  <section class="card" id="rEnvCard" hidden style="padding:16px">
+    <div class="stage" id="stage">
+      <p class="hint">본인이 맞으면 봉인을 눌러 열어보세요</p>
+      <div class="env">
+        <div class="env-back"></div>
+        <div class="letter">
+          <span class="lbl">내가 몰래 챙겨줄 사람</span>
+          <span class="target" id="rTarget"></span>
+        </div>
+        <div class="env-front">FROM. 마니또</div>
+        <div class="flap"></div>
+        <button class="seal" id="seal" type="button">열기</button>
+      </div>
+    </div>
+    <p class="after-open" id="afterOpen" hidden>공개 전까지 들키지 않게 잘 챙겨주세요</p>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>결과 공개까지</h2><span class="badge" id="rWhen"></span></div>
+    <div id="rCount"></div>
+    <div id="rRevealBox" hidden class="stack" style="gap:10px">
+      <p class="small muted">이제 단톡방에서 서로 공개해 보세요!</p>
+      <button class="primary" id="rShare" type="button">내 마니또 공개 메시지 복사</button>
+    </div>
+  </section>
+
+  <section class="card" id="rIdeas" hidden>
+    <h2>이런 걸 해보세요</h2>
+    <ul class="ideas">
+      <li>책상이나 가방에 간식 몰래 두기</li>
+      <li>이름 없이 응원 쪽지 남기기</li>
+      <li>단톡방에서 은근히 칭찬해 주기</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>참가자</h2><span class="badge" id="rCountBadge"></span></div>
+    <div class="chips" id="rChips"></div>
+  </section>
+  <p class="foot">봉투는 각자의 열쇠로만 열려요</p>
+</main>
+
+<p class="err" id="fatal" hidden style="margin:24px 16px"></p>
+
+<script>
+/* ===== core (no DOM) ===== */
+const A="abcdefghijklmnopqrstuvwxyz234567";
+const te=new TextEncoder(), td=new TextDecoder();
+const EC={name:"ECDH",namedCurve:"P-256"};
+const SUB=globalThis.crypto&&crypto.subtle;
+function b32enc(bytes){let bits=0,val=0,out="";for(const b of bytes){val=(val<<8)|b;bits+=8;while(bits>=5){out+=A[(val>>>(bits-5))&31];bits-=5;}val&=(1<<bits)-1;}if(bits>0)out+=A[(val<<(5-bits))&31];return out;}
+function b32dec(s){let bits=0,val=0;const out=[];for(const ch of s){const i=A.indexOf(ch);if(i<0)throw new Error("bad");val=(val<<5)|i;bits+=5;if(bits>=8){out.push((val>>>(bits-8))&255);bits-=8;}val&=(1<<bits)-1;}return new Uint8Array(out);}
+const b64u={enc:u=>btoa(String.fromCharCode(...u)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""),dec:s=>Uint8Array.from(atob(s.replace(/-/g,"+").replace(/_/g,"/")+"===".slice((s.length+3)%4)),c=>c.charCodeAt(0))};
+const cat=(...a)=>{const n=a.reduce((s,x)=>s+x.length,0),o=new Uint8Array(n);let p=0;for(const x of a){o.set(x,p);p+=x.length;}return o;};
+const u8=(...n)=>new Uint8Array(n);
+function cleanName(s){return s.trim().replace(/\s+/g," ").slice(0,20);}
+
+async function newKey(name){
+  const kp=await SUB.generateKey(EC,true,["deriveKey"]);
+  const j=await SUB.exportKey("jwk",kp.privateKey);
+  return {name,d:j.d,x:j.x,y:j.y};
+}
+function regCode(k){const n=te.encode(k.name);return "mr"+b32enc(cat(u8(n.length),n,b64u.dec(k.x),b64u.dec(k.y)));}
+function backupCode(k){const n=te.encode(k.name);return "mk"+b32enc(cat(u8(n.length),n,b64u.dec(k.d),b64u.dec(k.x),b64u.dec(k.y)));}
+function parseNameAnd(code,prefix,parts){
+  if(!code.startsWith(prefix))return null;
+  try{const b=b32dec(code.slice(prefix.length)),L=b[0];if(b.length<1+L+32*parts)return null;
+    const name=td.decode(b.slice(1,1+L));let p=1+L;const out=[];for(let i=0;i<parts;i++){out.push(b64u.enc(b.slice(p,p+32)));p+=32;}
+    return {name,out};}catch(e){return null;}
+}
+function parseReg(code){const r=parseNameAnd(code,"mr",2);return r&&{name:r.name,x:r.out[0],y:r.out[1]};}
+function parseBackup(code){const r=parseNameAnd(code,"mk",3);return r&&{name:r.name,d:r.out[0],x:r.out[1],y:r.out[2]};}
+const pubKey=(x,y)=>SUB.importKey("jwk",{kty:"EC",crv:"P-256",x,y,ext:true},EC,true,[]);
+const privKey=k=>SUB.importKey("jwk",{kty:"EC",crv:"P-256",d:k.d,x:k.x,y:k.y,ext:true},EC,false,["deriveKey"]);
+const aesKey=(priv,pub,use)=>SUB.deriveKey({name:"ECDH",public:pub},priv,{name:"AES-GCM",length:256},false,[use]);
+function rand(n){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n;}
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=rand(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;}
+const byKo=(a,b)=>a.localeCompare(b,"ko");
+
+// 참가자를 무작위 원으로 세우고, 각자 다음 사람을 챙김. 각 봉투는 그 사람의 공개키로 잠금.
+async function seal(parts,t){
+  const order=shuffle(parts), target=new Map(order.map((p,i)=>[p.name,order[(i+1)%order.length].name]));
+  const eph=await SUB.generateKey(EC,true,["deriveKey"]);
+  const ej=await SUB.exportKey("jwk",eph.privateKey);
+  const sec=Math.floor(t/1000);
+  const chunks=[u8(1),u8(sec>>>24&255,sec>>>16&255,sec>>>8&255,sec&255),b64u.dec(ej.x),b64u.dec(ej.y),u8(parts.length)];
+  for(const p of parts.slice().sort((a,b)=>byKo(a.name,b.name))){
+    const key=await aesKey(eph.privateKey,await pubKey(p.x,p.y),"encrypt");
+    const iv=crypto.getRandomValues(new Uint8Array(12)), nm=te.encode(p.name);
+    const ct=new Uint8Array(await SUB.encrypt({name:"AES-GCM",iv,additionalData:nm},key,te.encode(target.get(p.name))));
+    chunks.push(u8(nm.length),nm,iv,u8(ct.length),ct);
+  }
+  return "ms"+b32enc(cat(...chunks));
+}
+function parseSealed(code){
+  if(!code||!code.startsWith("ms"))return null;
+  try{
+    const b=b32dec(code.slice(2));if(b[0]!==1)return null;
+    const t=((b[1]<<24)>>>0)+(b[2]<<16)+(b[3]<<8)+b[4];
+    let p=5;const ex=b64u.enc(b.slice(p,p+32));p+=32;const ey=b64u.enc(b.slice(p,p+32));p+=32;
+    const n=b[p++],entries=[];
+    for(let i=0;i<n;i++){const L=b[p++];const nm=b.slice(p,p+L);p+=L;const iv=b.slice(p,p+12);p+=12;const C=b[p++];const ct=b.slice(p,p+C);p+=C;
+      if(ct.length!==C)return null;entries.push({name:td.decode(nm),nm,iv,ct});}
+    if(n<3)return null;
+    return {t:t*1000,ex,ey,entries};
+  }catch(e){return null;}
+}
+async function openSealed(s,keys){
+  const eph=await pubKey(s.ex,s.ey), found=[];
+  for(const k of keys){
+    const priv=await privKey(k).catch(()=>null);if(!priv)continue;
+    const cands=s.entries.filter(e=>e.name===k.name).concat(s.entries.filter(e=>e.name!==k.name));
+    for(const e of cands){
+      try{const key=await aesKey(priv,eph,"decrypt");
+        const pt=await SUB.decrypt({name:"AES-GCM",iv:e.iv,additionalData:e.nm},key,e.ct);
+        found.push({me:e.name,target:td.decode(pt)});break;}catch(err){}
+    }
+  }
+  return found;
+}
+</script>
+<script>
+/* ===== UI ===== */
+const $=id=>document.getElementById(id);
+const KEYS="manito-keys-v2", HOST="manito-host-v2";
+let storageOK=true;
+try{localStorage.setItem("manito-t","1");localStorage.removeItem("manito-t");}catch(e){storageOK=false;}
+let memKeys=[];
+function getJ(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
+function setJ(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
+function getKeys(){return storageOK?getJ(KEYS,[]):memKeys;}
+function saveKey(k){const ks=getKeys().filter(x=>x.name!==k.name);ks.push(k);if(storageOK)setJ(KEYS,ks);else memKeys=ks;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+const initial=n=>esc([...String(n).trim()][0]||"?");
+const fmt=new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"numeric",minute:"2-digit"});
+const BASE=location.href.split("#")[0];
+function err(id,m){$(id).textContent=m||"";$(id).hidden=!m;}
+function chips(names,cls){return names.slice().sort(byKo).map(n=>`<span class="chip ${cls||""}"><i>${initial(n)}</i>${esc(n)}</span>`).join("");}
+
+function copy(text,btn){
+  const label=btn.dataset.label||(btn.dataset.label=btn.textContent);
+  const flash=m=>{btn.textContent=m;clearTimeout(btn._t);btn._t=setTimeout(()=>btn.textContent=label,1800);};
+  const fail=()=>{let ta=btn.nextElementSibling;if(!ta||!ta.classList.contains("copyfb")){ta=document.createElement("textarea");ta.className="copyfb";ta.readOnly=true;btn.after(ta);}
+    ta.value=text;ta.hidden=false;ta.focus();ta.select();flash("아래 내용을 길게 눌러 복사하세요");};
+  try{if(!navigator.clipboard)throw 0;navigator.clipboard.writeText(text).then(()=>flash("복사됐어요 ✓"),fail);}catch(e){fail();}
+}
+
+/* --- 참가 --- */
+let joinCurrent=null;
+function showJoin(k){
+  joinCurrent=k;
+  const ks=getKeys();
+  $("joinNew").hidden=!!k; $("joinDone").hidden=!k;
+  $("joinEmblem").textContent=k?([...k.name][0]||"?"):"1";
+  if(k){
+    $("joinDoneName").textContent=k.name+"님 등록 준비 완료";
+    $("joinMsg").innerHTML=`<b>[마니또 참가] ${esc(k.name)}</b>${regCode(k)}`;
+    $("joinOthers").hidden=ks.length<2;
+    $("joinKeyList").innerHTML=ks.map(x=>`<button type="button" class="chip${x.name===k.name?" ok":""}" data-n="${esc(x.name)}" style="border:0"><i>${initial(x.name)}</i>${esc(x.name)}</button>`).join("");
+    $("joinKeyList").querySelectorAll("button").forEach(b=>b.onclick=()=>showJoin(getKeys().find(x=>x.name===b.dataset.n)));
+  }
+  if(!storageOK)err("joinErr","이 브라우저는 열쇠를 저장하지 못해요(비공개 모드 등). 열쇠 백업 코드를 꼭 저장해 두세요.");
+}
+$("joinMake").onclick=async()=>{
+  const name=cleanName($("joinName").value);
+  if(!name)return err("joinErr","이름을 써주세요.");
+  if(/\n/.test(name))return;
+  err("joinErr","");
+  $("joinMake").disabled=true;
+  try{const k=await newKey(name);saveKey(k);showJoin(k);window.scrollTo(0,0);}
+  catch(e){err("joinErr","이 브라우저에서는 열쇠를 만들 수 없어요. 크롬이나 사파리로 열어주세요.");}
+  $("joinMake").disabled=false;
+};
+$("joinName").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();$("joinMake").click();}});
+$("joinCopy").onclick=e=>copy(`[마니또 참가] ${joinCurrent.name}\n${regCode(joinCurrent)}`,e.currentTarget);
+$("joinBackup").onclick=e=>copy(`[마니또 열쇠 - 나만 보관] ${joinCurrent.name}\n${backupCode(joinCurrent)}`,e.currentTarget);
+$("joinAnother").onclick=()=>{$("joinName").value="";showJoin(null);$("joinName").focus();};
+
+/* --- 진행자 --- */
+let hostParts=[];
+function parseHostText(){
+  const found=new Map(), bad=[];
+  for(const m of $("hostPaste").value.matchAll(/mr[a-z2-7]{60,}/g)){const r=parseReg(m[0]);if(r)found.set(r.name,r);else bad.push(m[0]);}
+  hostParts=[...found.values()];
+  $("hostCount").textContent=hostParts.length+"명";
+  $("hostCount").className="badge"+(hostParts.length>=3?" ok":"");
+  $("hostList").innerHTML=hostParts.length?`<div class="chips">${chips(hostParts.map(p=>p.name),"ok")}</div>`:`<p class="empty">아직 확인된 참가자가 없어요</p>`;
+  err("hostWarn",bad.length?`잘린 코드가 ${bad.length}개 있어요. 그 사람에게 메시지를 다시 올려달라고 해주세요.`:"");
+  $("hostDraw").disabled=hostParts.length<3;
+  $("hostDraw").textContent=hostParts.length<3?"참가자가 3명 이상이어야 해요":`${hostParts.length}명으로 마니또 뽑기`;
+  const st=getJ(HOST,{});st.paste=$("hostPaste").value;setJ(HOST,st);
+}
+function hostWhen(){const t=new Date($("hostReveal").value);$("hostWhen").textContent=isFinite(t)?fmt.format(t)+"에 공개돼요":"";}
+function showHost(){
+  const st=getJ(HOST,{});
+  if(st.paste!=null&&!$("hostPaste").value)$("hostPaste").value=st.paste;
+  if(st.reveal)$("hostReveal").value=st.reveal;
+  $("hostMine").hidden=!getKeys().length;
+  parseHostText();hostWhen();
+  const done=!!st.sealed;
+  $("hostSetup").hidden=done;$("hostDone").hidden=!done;
+  if(done){$("hostDoneSub").textContent=`${st.n}명 · ${fmt.format(new Date(st.t))} 공개`;$("hostOpen").href="#"+st.sealed;}
+}
+$("hostPaste").addEventListener("input",parseHostText);
+$("hostReveal").addEventListener("input",()=>{hostWhen();const st=getJ(HOST,{});st.reveal=$("hostReveal").value;setJ(HOST,st);});
+$("hostMine").onclick=()=>{
+  const add=getKeys().map(k=>`[마니또 참가] ${k.name}\n${regCode(k)}`).join("\n");
+  $("hostPaste").value=($("hostPaste").value.trim()+"\n"+add).trim();parseHostText();
+};
+$("hostDraw").onclick=async()=>{
+  const t=new Date($("hostReveal").value).getTime();
+  if(!isFinite(t))return err("hostErr","공개 시각을 다시 골라주세요.");
+  err("hostErr","");$("hostDraw").disabled=true;
+  try{
+    const code=await seal(hostParts,t);
+    const st=getJ(HOST,{});Object.assign(st,{sealed:code,t,n:hostParts.length});setJ(HOST,st);
+    showHost();window.scrollTo(0,0);
+  }catch(e){err("hostErr","뽑기에 실패했어요. 크롬이나 사파리로 다시 열어 시도해 주세요.");$("hostDraw").disabled=false;}
+};
+$("hostCopy").onclick=e=>{const st=getJ(HOST,{});copy(`[마니또 결과] 링크를 눌러 내 마니또를 확인하세요!\n참가 등록한 그 휴대폰에서 열어야 내 봉투가 열려요.\n${BASE}#${st.sealed}`,e.currentTarget);};
+$("hostRedraw").onclick=()=>{$("hostConfirm").hidden=false;};
+$("hostNo").onclick=()=>{$("hostConfirm").hidden=true;};
+$("hostYes").onclick=()=>{const st=getJ(HOST,{});delete st.sealed;setJ(HOST,st);$("hostConfirm").hidden=true;showHost();};
+
+/* --- 결과 --- */
+let timer=null, sealed=null, mine=null;
+async function showResult(s){
+  sealed=s;mine=null;
+  ["rLocked","rChoose","rEnvCard","rIdeas"].forEach(id=>$(id).hidden=true);
+  $("rTitle").textContent="마니또 결과 도착";$("rEmblem").textContent="마";
+  $("rChips").innerHTML=chips(s.entries.map(e=>e.name));
+  $("rCountBadge").textContent=s.entries.length+"명";
+  $("rWhen").textContent=fmt.format(new Date(s.t));
+  startCount();
+  let found=[];
+  try{found=await openSealed(s,getKeys());}catch(e){}
+  if(found.length===1)openEnvelope(found[0]);
+  else if(found.length>1){
+    $("rChoose").hidden=false;
+    $("rChooseList").innerHTML=found.map((f,i)=>`<button type="button" class="chip" data-i="${i}" style="border:0"><i>${initial(f.me)}</i>${esc(f.me)}</button>`).join("");
+    $("rChooseList").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("rChoose").hidden=true;openEnvelope(found[+b.dataset.i]);});
+  }else $("rLocked").hidden=false;
+}
+function openEnvelope(f){
+  mine=f;
+  $("rTitle").textContent=f.me+"님께";$("rEmblem").innerHTML=initial(f.me);
+  $("rTarget").textContent=f.target;
+  $("stage").classList.remove("open");$("afterOpen").hidden=true;
+  $("rEnvCard").hidden=false;
+  $("seal").onclick=()=>{$("stage").classList.add("open");$("afterOpen").hidden=false;$("rIdeas").hidden=false;};
+  tick();
+}
+$("rBackupGo").onclick=async()=>{
+  const m=$("rBackup").value.match(/mk[a-z2-7]{100,}/);const k=m&&parseBackup(m[0]);
+  if(!k)return err("rErr","백업 코드를 알아보지 못했어요. 저장해 둔 메시지 전체를 붙여넣어 주세요.");
+  const f=await openSealed(sealed,[k]).catch(()=>[]);
+  if(!f.length)return err("rErr","이 열쇠로는 열리는 봉투가 없어요. 이번 뽑기에 등록한 열쇠가 맞는지 확인해 주세요.");
+  err("rErr","");saveKey(k);$("rLocked").hidden=true;openEnvelope(f[0]);
+};
+function startCount(){clearInterval(timer);$("rCount").innerHTML="";$("rRevealBox").hidden=true;tick();timer=setInterval(tick,1000);}
+function tick(){
+  if(!sealed)return;
+  const left=sealed.t-Date.now(), box=$("rCount");
+  if(left<=0){
+    box.innerHTML=`<p class="revealed-msg">공개 시간이에요!</p>`;
+    $("rRevealBox").hidden=!mine;clearInterval(timer);return;
+  }
+  const s=Math.floor(left/1000),v=[Math.floor(s/86400),Math.floor(s%86400/3600),Math.floor(s%3600/60),s%60];
+  if(!box.querySelector(".segs"))box.innerHTML=`<div class="segs">${["일","시간","분","초"].map(u=>`<div class="seg"><b></b><span>${u}</span></div>`).join("")}</div>`;
+  box.querySelectorAll(".seg b").forEach((b,i)=>b.textContent=i===0?v[i]:String(v[i]).padStart(2,"0"));
+}
+$("rShare").onclick=e=>{if(mine)copy(`[마니또 공개] ${mine.me}의 마니또는 바로 ${mine.target}! 🎁`,e.currentTarget);};
+
+/* --- 처음 화면 --- */
+$("homePasteGo").onclick=()=>{
+  const m=$("homePaste").value.match(/ms[a-z2-7]{100,}/);
+  if(!m||!parseSealed(m[0]))return err("homePasteErr","결과 링크를 알아보지 못했어요. 메시지 전체를 붙여넣어 주세요.");
+  err("homePasteErr","");location.hash=m[0];
+};
+
+/* --- 라우팅 --- */
+function route(){
+  clearInterval(timer);sealed=null;
+  const h=decodeURIComponent(location.hash.slice(1));
+  ["home","join","host","result"].forEach(id=>$(id).hidden=true);
+  if(!SUB){$("fatal").hidden=false;$("fatal").textContent="이 브라우저에서는 마니또를 쓸 수 없어요. 크롬이나 사파리로 열어주세요.";return;}
+  if(h.startsWith("ms")){
+    const s=parseSealed(h);
+    if(s){$("result").hidden=false;showResult(s);window.scrollTo(0,0);return;}
+    $("home").hidden=false;$("homePaste").closest("details").open=true;err("homePasteErr","결과 링크가 잘린 것 같아요. 받은 메시지 전체를 아래에 붙여넣어 주세요.");return;
+  }
+  if(h==="join"){$("join").hidden=false;const ks=getKeys();showJoin(joinCurrent||ks[ks.length-1]||null);}
+  else if(h==="host"){$("host").hidden=false;showHost();}
+  else $("home").hidden=false;
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route);
+route();
+</script>
+</body>
+</html>
