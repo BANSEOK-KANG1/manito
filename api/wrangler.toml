@@ -1,0 +1,7 @@
+name = "manito-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[kv_namespaces]]
+binding = "MANITO"
+id = "16a6b66b258147b5a77b64e38d52f522"
