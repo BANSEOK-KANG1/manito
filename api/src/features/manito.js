@@ -31,27 +31,55 @@ function reply(outputs, qrs = MENU) {
 }
 const withMenu = (first = []) => [...first, ...MENU.filter(m => !first.some(f => (typeof f === "string" ? f : f[1]) === m[1]))];
 
-/* ---------- 진입점 ---------- */
-export async function kakaoSkill(req, env, X) {
-  if (env.KAKAO_KEY && req.headers.get("x-manito-key") !== env.KAKAO_KEY) return new Response("forbidden", { status: 403 });
-  const body = await req.json().catch(() => null);
-  const ur = body?.userRequest, uid = ur?.user?.id;
-  if (!uid) return reply("요청을 읽지 못했어요.", []);
-  const box = name => env.BOX.get(env.BOX.idFromName(name));
-  const c = {
-    env, X, ur, now: Date.now(), origin: new URL(req.url).origin,
-    kid: await X.sha("kakao:" + uid),
-    utter: String(ur.utterance ?? "").trim(),
-    sget: async name => (await box(name).fetch("https://box/")).json(),
-    sput: (name, v, ifEmpty) => box(name).fetch("https://box/", { method: "POST", body: JSON.stringify({ v, ifEmpty }) }),
-  };
-  c.ses = (await c.sget("u:" + c.kid)) || {};
-  const before = JSON.stringify(c.ses);
-  let res;
-  try { res = await route(c); } catch (e) { res = reply("앗, 문제가 생겼어요. 잠시 뒤 다시 보내주세요.", withMenu()); }
-  if (JSON.stringify(c.ses) !== before) await c.sput("u:" + c.kid, c.ses);
-  res.headers.set("x-took-ms", String(Date.now() - c.now)); // 카톡은 5초 안에 답해야 해서 처리 시간을 남긴다
-  return res;
+import { reply as greply } from "../ui.js";
+
+export const name = "🎁 마니또";
+export const commands = [
+  ["방 만들기", "새 마니또 방 만들기"],
+  ["(참가 코드 6자리)", "방에 들어가기"],
+  ["홈", "내 대상·점수·새 소식 (버튼으로 전부 진행)"],
+];
+export const groupCommands = [
+  ["마니또", "진행 현황 (참가 인원, 완료 미션, 공개까지)"],
+  ["마니또 연결 K7M2QX", "이 단톡방에 마니또 방 연결"],
+  ["마니또 결과", "공개 후 전체 결과"],
+];
+
+/* ---------- 1:1 진입점 (본체 bot.js가 사용자 상태 c.ses를 읽고 저장한다) ---------- */
+export async function handle(c) { return route(c); }
+
+/* ---------- 단톡방: 공개해도 되는 정보만 ---------- */
+// 누가 누구를 챙기는지, 미션 내용, 쪽지는 절대 단톡방에 내보내지 않는다.
+export async function group(c) {
+  const m = c.utter.match(/^마니또\s*(.*)$/);
+  if (!m) return null;
+  const sub = m[1].trim();
+  const DM = `🤫 마니또 비밀 기능(내 대상·미션·쪽지·질문)은 채널 1:1 채팅에서만 돼요.${c.env.CHANNEL_URL ? "\n👉 " + c.env.CHANNEL_URL : ""}`;
+  let lm;
+  if ((lm = sub.match(/^연결\s+([A-Za-z0-9]{6})$/))) {
+    const id = await c.sget("c:" + lm[1].toUpperCase());
+    if (!id) return greply(`'${lm[1]}' 참가 코드를 찾지 못했어요.`, [], true);
+    if (!c.chatId) return greply(`연결은 됐다고 치고 싶지만, 이 단톡방을 구분할 정보가 카카오에서 오지 않았어요.\n대신 '/마니또 ${lm[1].toUpperCase()}'처럼 코드를 붙여 부르면 현황을 볼 수 있어요.`, [], true);
+    await c.sput("g:" + c.chatId, id);
+    return greply("✅ 이 단톡방에 마니또 방을 연결했어요. 이제 '/마니또'로 현황을 볼 수 있어요.", [["🎁 마니또 현황", "마니또"]], true);
+  }
+  const codeM = sub.match(/^([A-Za-z0-9]{6})$/);
+  let id = codeM ? await c.sget("c:" + codeM[1].toUpperCase()) : null;
+  if (!id && c.chatId) id = await c.sget("g:" + c.chatId);
+  if (!id) id = c.ses.room;
+  if (!id) return greply(`아직 연결된 마니또 방이 없어요.\n· 방장: 채널 1:1 채팅에서 '방 만들기'\n· 그다음 여기서 '/마니또 연결 참가코드'\n\n${DM}`, [], true);
+  const r = await c.X.stub(c.env, id).fetch(`https://room/${id}/kpeek`, { method: "POST", headers: { "x-kakao": "1" }, body: JSON.stringify({ kid: "-" }) });
+  if (!r.ok) return greply("마니또 방이 없어졌거나 기간이 끝났어요.", [], true);
+  const v = await r.json();
+  const over = c.now >= v.reveal && v.result;
+  if (over) {
+    const sc = v.scores.slice().sort((a, b) => b.total - a.total);
+    return greply(`🎉 [${v.title}] 결과!\n\n👑 최고의 마니또: ${sc[0].name} (${sc[0].total}점)\n\n${v.result.map(([a, b]) => `${a} → ${b}`).join("\n")}\n\n🏆 순위\n${sc.map((x, k) => `${k + 1}. ${x.name} ${x.total}점${x.right ? " 🎯" : ""}`).join("\n")}\n\n📸 미션 사진 ${v.album.length}장은 채널 1:1의 '앨범'에서 볼 수 있어요.`, [], true);
+  }
+  if (/^결과/.test(sub)) return greply(`아직 공개 전이에요. ${fmt(v.reveal)} (${until(v.reveal, c.now)})`, [["🎁 마니또 현황", "마니또"]], true);
+  const joined = v.claimed.filter(Boolean).length, cheer = v.cheer.reduce((a, b) => a + b, 0);
+  const waiting = v.names.filter((_, i) => !v.claimed[i]);
+  return greply(`🎁 [${v.title}] 진행 현황\n\n참가: ${joined}/${v.names.length}명${waiting.length ? `\n아직 안 들어온 사람: ${waiting.join(", ")}` : ""}\n지금까지 완료한 미션: ${cheer}개\n공개: ${fmt(v.reveal)} (${until(v.reveal, c.now)})\n\n아직 참가 안 했다면 👇\n${joinGuide(c, v)}\n\n${DM}`, [["🔄 새로고침", "마니또"]], true);
 }
 
 async function call(c, kind, data = {}) {

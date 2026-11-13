@@ -1,4 +1,4 @@
-import { kakaoSkill } from "./kakao.js";
+import { kakaoSkill, kakaoDebug } from "./bot.js";
 // 마니또 API — 서버가 직접 뽑고, 각자 이름+비밀번호로 자기 것만 받는다.
 // 방마다 Durable Object 하나: 저장 즉시 반영되고 요청이 차례대로 처리된다.
 // 저장 키: "room" (방 정보), "p:<i>" (사람별 상태), "img:<key>" (증거 사진)
@@ -403,6 +403,7 @@ export default {
       }
       if (url.pathname === "/kakao/skill" && req.method === "GET") // 브라우저로 열었을 때 안내 (카카오는 POST로 보냄)
         return new Response("✅ 마니또 카카오 챗봇 스킬 주소가 정상 작동 중이에요.\n이 주소는 브라우저로 여는 곳이 아니라, 카카오 i 오픈빌더 '스킬' URL 칸에 넣는 주소예요.", { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+      if (url.pathname === "/kakao/debug" && req.method === "GET" && env.BOX) return await kakaoDebug(req, env);
       if (url.pathname === "/kakao/skill" && req.method === "POST") {
         if (!env.BOX) return fail("not_found", "없는 주소예요.", 404);
         return await kakaoSkill(req, env, { stub, newId, sha, DECK, C: { NOTE_MAX, ASK_MAX, QUIZ_N, GUESS_PTS, QUIZ_PTS, IMG_MAX_K } });

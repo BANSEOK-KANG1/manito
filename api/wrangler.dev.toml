@@ -6,6 +6,7 @@ compatibility_date = "2026-10-01"
 # 시험 서버라서 공개 시간을 1분 뒤로도 잡을 수 있게 (운영은 기본 10분)
 [vars]
 MIN_REVEAL_MIN = "1"
+LOG_PAYLOADS = "1"   # 단톡방 요청 모양 확인용: 최근 20개를 남긴다 (GET /kakao/debug)
 
 [assets]
 directory = "./public-dev"
