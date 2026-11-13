@@ -139,7 +139,8 @@ details.card summary::-webkit-details-marker{display:none}
 .who span{min-width:0;overflow-wrap:anywhere;line-height:1.3}
 .who small{display:block;font-size:11px;font-weight:400;color:var(--muted)}
 .who.claimed i{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
-.who.mine{border-color:var(--seal);box-shadow:0 0 0 2px var(--seal-soft)}
+.who.sel{border-color:var(--seal);background:var(--seal-soft);box-shadow:0 0 0 2px var(--seal-soft)}
+.who.sel i{background:var(--seal);border-color:var(--seal);color:var(--on-seal)}
 .pin{font-family:var(--display);font-size:30px;letter-spacing:.5em;text-align:center;padding:12px 0 12px .5em}
 .check-row{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
 .check-row input{width:18px;height:18px;accent-color:var(--seal)}
@@ -154,11 +155,72 @@ ol.chain .arrow{color:var(--seal);font-size:12px;white-space:nowrap}
 ol.chain .to{text-align:right;font-weight:700}
 ol.chain li.me{background:var(--seal-soft);margin:0 -10px;padding:9px 10px;border-radius:10px;border-top-color:transparent}
 .loading{text-align:center;color:var(--muted);padding:40px 0}
+
+/* tabs */
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--surface);box-shadow:var(--shadow)}
+.tabs button{border:0;border-radius:10px;padding:10px 4px;font-size:14px;font-weight:500;color:var(--muted);background:transparent;position:relative}
+.tabs button[aria-selected="true"]{background:var(--seal);color:var(--on-seal)}
+.tabs .dot{position:absolute;top:6px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--seal)}
+.tabs button[aria-selected="true"] .dot{background:var(--on-seal)}
+
+/* score */
+.scorebar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.scorebar div{background:var(--sunk);border-radius:12px;padding:10px 6px;text-align:center}
+.scorebar b{display:block;font-family:var(--display);font-weight:400;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+.scorebar span{font-size:12px;color:var(--muted)}
+
+/* mission card */
+.deck{display:flex;justify-content:center;padding:6px 0}
+.mcard{width:min(230px,100%);aspect-ratio:3/4;perspective:1100px;border:0;padding:0;background:transparent;border-radius:18px}
+.mcard .inner{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.3,.8,.3,1);transform-style:preserve-3d}
+.mcard.flipped .inner{transform:rotateY(180deg)}
+.mcard.noanim .inner{transition:none}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center}
+.face.back{background:
+  repeating-linear-gradient(45deg,transparent 0 10px,color-mix(in srgb,var(--on-seal) 12%,transparent) 10px 12px),
+  radial-gradient(circle at 30% 20%,var(--seal),var(--seal-deep));color:var(--on-seal);box-shadow:0 10px 24px color-mix(in srgb,var(--seal) 35%,transparent)}
+.face.back .mark{width:70px;height:70px;border-radius:50%;border:2px solid color-mix(in srgb,var(--on-seal) 70%,transparent);display:grid;place-items:center;font-family:var(--display);font-size:30px}
+.face.back p{font-family:var(--display);font-size:20px}
+.face.back small{font-size:12px;opacity:.85}
+.face.front{transform:rotateY(180deg);background:var(--surface);border:2px solid var(--seal);color:var(--fg);justify-content:space-between}
+.stars{color:var(--seal);font-size:20px;letter-spacing:2px}
+.face.front h3{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.2;margin:0;text-wrap:balance}
+.face.front p{font-size:14px;color:var(--muted);line-height:1.5}
+.face.front .pts{font-size:12px;font-weight:700;color:var(--seal);background:var(--seal-soft);border-radius:999px;padding:2px 10px}
+.done-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.done-list li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.done-list li:first-child{border-top:0}
+.done-list .s{color:var(--seal);white-space:nowrap}
+
+/* notes */
+.counter{font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.notes{display:flex;flex-direction:column;gap:10px}
+.note{background:var(--sunk);border-radius:4px 14px 14px 14px;padding:10px 12px;font-size:14px;overflow-wrap:anywhere}
+.note time{display:block;font-size:11px;color:var(--muted);margin-top:4px}
+.cheer{display:flex;gap:10px;align-items:center;background:var(--seal-soft);border-radius:12px;padding:12px;font-size:14px}
+.cheer b{font-family:var(--display);font-weight:400;font-size:22px;color:var(--seal)}
+
+/* scoreboard */
+ol.board{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+ol.board li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+ol.board li:first-child{border-top:0}
+ol.board .rank{font-family:var(--display);font-size:18px;color:var(--muted);text-align:center}
+ol.board li.top .rank{color:var(--seal)}
+ol.board .nm{font-weight:700;min-width:0;overflow-wrap:anywhere}
+ol.board .nm small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+ol.board .tot{font-family:var(--display);font-size:22px;font-variant-numeric:tabular-nums}
+ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-radius:10px;border-top-color:transparent}
+.award{text-align:center;display:flex;flex-direction:column;gap:4px;padding:6px 0}
+.award .crown{font-size:34px;line-height:1}
+.award b{font-family:var(--display);font-weight:400;font-size:26px;color:var(--seal)}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){.mcard .inner,.toast{transition:none}}
 </style>
 </head>
 <body>
 
-<!-- 방 만들기 -->
 <main class="wrap" id="create" hidden>
   <header class="hero">
     <div class="emblem" aria-hidden="true">마</div>
@@ -201,6 +263,7 @@ ol.chain li.me{background:var(--seal-soft);margin:0 -10px;padding:9px 10px;borde
   </div>
 </main>
 
+
 <!-- 방 -->
 <main class="wrap" id="room" hidden>
   <header class="hero">
@@ -214,14 +277,12 @@ ol.chain li.me{background:var(--seal-soft);margin:0 -10px;padding:9px 10px;borde
   <p class="loading" id="rLoading">불러오는 중…</p>
   <p class="err" id="rFatal" hidden></p>
 
-  <!-- 이름 고르기 -->
   <section class="card" id="pick" hidden>
     <div class="card-head"><h2>내 이름을 누르세요</h2><span class="badge ok" id="claimCount"></span></div>
     <div class="who-grid" id="whoGrid"></div>
     <p class="muted small">처음 누르면 비밀번호 4자리를 정해요. 그다음부터는 그 비밀번호로만 열려서 남이 내 것을 볼 수 없어요.</p>
   </section>
 
-  <!-- 비밀번호 -->
   <section class="card" id="pinCard" hidden>
     <h2 id="pinTitle"></h2>
     <p class="small muted" id="pinHelp"></p>
@@ -230,63 +291,133 @@ ol.chain li.me{background:var(--seal-soft);margin:0 -10px;padding:9px 10px;borde
     <p class="err" id="pinErr" hidden></p>
     <div class="btns">
       <button id="pinBack" type="button">뒤로</button>
-      <button class="danger" id="pinGo" type="button" style="background:var(--seal);border-color:var(--seal);color:var(--on-seal);font-weight:700">열기</button>
+      <button class="danger" id="pinGo" type="button">열기</button>
     </div>
   </section>
 
-  <!-- 봉투 -->
-  <section class="card" id="envCard" hidden style="padding:16px">
-    <div class="stage" id="stage">
-      <p class="hint">봉인을 눌러 열어보세요</p>
-      <div class="env">
-        <div class="env-back"></div>
-        <div class="letter">
-          <span class="lbl">내가 몰래 챙겨줄 사람</span>
-          <span class="target" id="target"></span>
+  <!-- 내 화면 -->
+  <div class="stack" id="mine" hidden>
+    <section class="card" id="envCard" style="padding:16px">
+      <div class="stage" id="stage">
+        <p class="hint">봉인을 눌러 열어보세요</p>
+        <div class="env">
+          <div class="env-back"></div>
+          <div class="letter">
+            <span class="lbl">내가 몰래 챙겨줄 사람</span>
+            <span class="target" id="target"></span>
+          </div>
+          <div class="env-front">FROM. 마니또</div>
+          <div class="flap"></div>
+          <button class="seal" id="seal" type="button">열기</button>
         </div>
-        <div class="env-front">FROM. 마니또</div>
-        <div class="flap"></div>
-        <button class="seal" id="seal" type="button">열기</button>
       </div>
+      <p class="after-open" id="afterOpen" hidden>공개 전까지 들키지 않게 잘 챙겨주세요</p>
+    </section>
+
+    <section class="card" id="countCard">
+      <div class="card-head"><h2>결과 공개까지</h2><span class="badge" id="rWhen"></span></div>
+      <div id="rCount"></div>
+      <button class="primary" id="share" type="button" hidden>내 마니또 공개 메시지 복사</button>
+    </section>
+
+    <nav class="tabs" role="tablist" id="tabs">
+      <button role="tab" type="button" data-tab="mission" aria-selected="true">미션 카드</button>
+      <button role="tab" type="button" data-tab="notes" aria-selected="false">쪽지<span class="dot" id="noteDot" hidden></span></button>
+      <button role="tab" type="button" data-tab="guess" aria-selected="false">정체 맞히기</button>
+    </nav>
+
+    <!-- 미션 -->
+    <div class="stack" data-panel="mission">
+      <section class="card">
+        <div class="scorebar">
+          <div><b id="sPts">0</b><span>내 점수</span></div>
+          <div><b id="sDone">0</b><span>완료한 미션</span></div>
+          <div><b id="sLeft">3</b><span>오늘 남은 미션</span></div>
+        </div>
+        <div class="deck">
+          <button class="mcard" id="mcard" type="button" aria-label="미션 카드">
+            <div class="inner">
+              <div class="face back"><div class="mark">마</div><p>카드 뽑기</p><small id="deckInfo">눌러서 오늘의 미션 뽑기</small></div>
+              <div class="face front">
+                <span class="stars" id="cStars"></span>
+                <div style="display:flex;flex-direction:column;gap:8px"><h3 id="cTitle"></h3><p id="cDesc"></p></div>
+                <span class="pts" id="cPts"></span>
+              </div>
+            </div>
+          </button>
+        </div>
+        <p class="err" id="mErr" hidden></p>
+        <div class="btns" id="cardBtns" hidden>
+          <button id="pass" type="button">패스</button>
+          <button class="danger" id="done" type="button">완료했어요 ✓</button>
+        </div>
+        <button class="primary" id="draw" type="button">카드 뽑기</button>
+        <p class="muted small" style="text-align:center">완료는 양심에 맡겨요. 하루 미션 3개, 패스 1번.</p>
+      </section>
+      <section class="card" id="doneCard" hidden>
+        <h2>완료한 미션</h2>
+        <ul class="done-list" id="doneList"></ul>
+      </section>
     </div>
-    <p class="after-open" id="afterOpen" hidden>공개 전까지 들키지 않게 잘 챙겨주세요</p>
-  </section>
 
-  <section class="card" id="countCard" hidden>
-    <div class="card-head"><h2>결과 공개까지</h2><span class="badge" id="rWhen"></span></div>
-    <div id="rCount"></div>
-    <button class="primary" id="share" type="button" hidden>내 마니또 공개 메시지 복사</button>
-  </section>
+    <!-- 쪽지 -->
+    <div class="stack" data-panel="notes" hidden>
+      <section class="card">
+        <h2 id="noteTo"></h2>
+        <p class="small muted">이름 없이 전달돼요. 말투로 들키지 않게 조심!</p>
+        <textarea id="noteText" maxlength="120" placeholder="응원 한마디, 수수께끼 힌트…"></textarea>
+        <div class="counter" id="noteCount">0/120</div>
+        <p class="err" id="nErr" hidden></p>
+        <button class="primary" id="sendNote" type="button">익명으로 보내기</button>
+      </section>
+      <section class="card">
+        <h2>내 쪽지함</h2>
+        <div class="cheer"><b id="cheer">0</b><span>내 마니또가 나를 위해 완료한 미션 수</span></div>
+        <div class="notes" id="inbox"></div>
+      </section>
+    </div>
 
-  <section class="card" id="ideas" hidden>
-    <h2>이런 걸 해보세요</h2>
-    <ul class="ideas">
-      <li>책상이나 가방에 간식 몰래 두기</li>
-      <li>이름 없이 응원 쪽지 남기기</li>
-      <li>단톡방에서 은근히 칭찬해 주기</li>
-    </ul>
+    <!-- 맞히기 -->
+    <div class="stack" data-panel="guess" hidden>
+      <section class="card">
+        <h2>나를 챙겨주는 사람은 누구일까?</h2>
+        <p class="small muted">공개 전까지 몇 번이든 바꿀 수 있어요. 맞히면 <b>+3점</b>!</p>
+        <div class="who-grid" id="guessGrid"></div>
+        <p class="err" id="gErr" hidden></p>
+      </section>
+    </div>
+  </div>
+
+  <!-- 공개 후 -->
+  <section class="card" id="boardCard" hidden>
+    <div class="award" id="award"></div>
+    <ol class="board" id="board"></ol>
+    <p class="muted small">점수 = 완료한 미션의 별 개수 + 정체를 맞히면 3점</p>
   </section>
 
   <section class="card" id="resultCard" hidden>
-    <h2>전체 결과</h2>
+    <h2>누가 누구를 챙겼을까</h2>
     <div id="cycle"></div>
     <ol class="chain" id="chain"></ol>
   </section>
 
   <button class="textbtn" id="toPick" type="button" hidden>다른 이름 보기</button>
 </main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const API="https://manito-api.banseok-kang1.workers.dev";
+const API=location.hostname.endsWith("workers.dev")?"":"https://manito-api.banseok-kang1.workers.dev";
 const $=id=>document.getElementById(id);
-const MINE="manito-mine-v3", MADE="manito-made-v3";
+const MINE="manito-mine-v3", MADE="manito-made-v3", SEEN="manito-seen-v4";
 function getJ(k,d){try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;}}
 function setJ(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}}
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 const first=n=>[...String(n).trim()][0]||"?";
 const fmt=new Intl.DateTimeFormat("ko-KR",{month:"long",day:"numeric",weekday:"short",hour:"numeric",minute:"2-digit"});
+const fmtShort=new Intl.DateTimeFormat("ko-KR",{month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"});
 const BASE=location.href.split("#")[0];
 function err(id,m){$(id).textContent=m||"";$(id).hidden=!m;}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("on"),1800);}
 async function api(path,body){
   let r;
   try{r=await fetch(API+path,body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:{cache:"no-store"});}
@@ -327,13 +458,11 @@ $("make").onclick=async()=>{
   const reveal=new Date($("reveal").value).getTime();
   if(!isFinite(reveal))return err("createErr","공개 시각을 다시 골라주세요.");
   err("createErr","");$("make").disabled=true;$("make").textContent="뽑는 중…";
-  try{
-    const {id}=await api("/api/rooms",{names,reveal});
-    setJ(MADE,{id,n:names.length,reveal});showMade();window.scrollTo(0,0);
-  }catch(e){err("createErr",e.message);}
+  try{const {id}=await api("/api/rooms",{names,reveal});setJ(MADE,{id,n:names.length,reveal});showMade();window.scrollTo(0,0);}
+  catch(e){err("createErr",e.message);}
   $("make").disabled=false;$("make").textContent="마니또 방 만들기";
 };
-function roomMsg(m){return `[마니또] ${m.n}명 마니또를 뽑았어요!\n링크를 열고 내 이름을 눌러 확인하세요.\n결과 공개: ${fmt.format(new Date(m.reveal))}\n${BASE}#${m.id}`;}
+function roomMsg(m){return `[마니또] ${m.n}명 마니또를 뽑았어요!\n링크를 열고 내 이름을 눌러 확인하세요. 미션 카드도 뽑아보세요!\n결과 공개: ${fmt.format(new Date(m.reveal))}\n${BASE}#${m.id}`;}
 function showMade(){
   const m=getJ(MADE,null);
   $("createForm").hidden=!!m;$("createDone").hidden=!m;
@@ -346,30 +475,32 @@ function showMade(){
 $("again").onclick=()=>{try{localStorage.removeItem(MADE);}catch(e){}showMade();};
 
 /* ---------- 방 ---------- */
-let room=null,roomId=null,pickIdx=-1,mine=null,timer=null;
-const show=(ids)=>["pick","pinCard","envCard","countCard","ideas","resultCard","toPick"].forEach(id=>$(id).hidden=!ids.includes(id));
+let room=null,roomId=null,pickIdx=-1,me=null,cred=null,timer=null,tab="mission";
+const SECTIONS=["pick","pinCard","mine","boardCard","resultCard","toPick"];
+const show=ids=>SECTIONS.forEach(id=>$(id).hidden=!ids.includes(id));
+const over=()=>room&&Date.now()+room.skew>=room.reveal;
+function head(eyebrow,title,em){$("rEyebrow").textContent=eyebrow;$("rTitle").textContent=title;$("rEmblem").textContent=em;}
+
 async function loadRoom(id){
-  roomId=id;mine=null;room=null;clearInterval(timer);
-  show([]);$("rLoading").hidden=false;err("rFatal","");
-  $("rTitle").textContent="우리 마니또";$("rEyebrow").textContent="마니또 진행 중";$("rEmblem").textContent="마";
+  roomId=id;me=null;cred=null;room=null;clearInterval(timer);
+  show([]);$("rLoading").hidden=false;err("rFatal","");head("마니또 진행 중","우리 마니또","마");
   try{room=await api("/api/rooms/"+id);room.skew=room.now-Date.now();}
   catch(e){$("rLoading").hidden=true;err("rFatal",e.message);return;}
   $("rLoading").hidden=true;
-  $("rTitle").textContent=`${room.title} · ${room.names.length}명`;
   $("rWhen").textContent=fmt.format(new Date(room.reveal));
-  const saved=(getJ(MINE,{}))[id];
-  if(saved){try{const r=await api(`/api/rooms/${id}/open`,{who:saved.who,pin:saved.pin});return showEnvelope(r,saved.who);}catch(e){}}
+  const saved=getJ(MINE,{})[id];
+  if(saved){try{const r=await api(`/api/rooms/${id}/open`,saved);cred=saved;return showMine(r,true);}catch(e){}}
   showPick();
 }
 function showPick(){
-  show(["pick","countCard"].concat(room.result?["resultCard"]:[]));
-  $("rTitle").textContent=`${room.title} · ${room.names.length}명`;$("rEmblem").textContent="마";$("rEyebrow").textContent="마니또 진행 중";
-  const c=room.claimed.filter(Boolean).length;
-  $("claimCount").textContent=`${c}/${room.names.length} 확인`;
+  me=null;cred=null;
+  show(["pick"].concat(room.result?["boardCard","resultCard"]:[]));
+  head(over()?"결과 공개":"마니또 진행 중",`${room.title} · ${room.names.length}명`,"마");
+  $("claimCount").textContent=`${room.claimed.filter(Boolean).length}/${room.names.length} 확인`;
   const order=room.names.map((n,i)=>({n,i})).sort((a,b)=>a.n.localeCompare(b.n,"ko"));
-  $("whoGrid").innerHTML=order.map(({n,i})=>`<button type="button" class="who${room.claimed[i]?" claimed":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}<small>${room.claimed[i]?"비밀번호 있음":"아직 안 열어봄"}</small></span></button>`).join("");
+  $("whoGrid").innerHTML=order.map(({n,i})=>`<button type="button" class="who${room.claimed[i]?" claimed":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}<small>${room.claimed[i]?"참여 중":"아직 안 열어봄"}${room.cheer&&room.cheer[i]?` · 받은 미션 ${room.cheer[i]}`:""}</small></span></button>`).join("");
   $("whoGrid").querySelectorAll("button").forEach(b=>b.onclick=()=>showPin(+b.dataset.i));
-  startCount();renderResult();
+  renderResult();
 }
 function showPin(i){
   pickIdx=i;show(["pinCard"]);
@@ -387,35 +518,96 @@ $("pinGo").onclick=async()=>{
   if(!/^\d{4}$/.test(pin))return err("pinErr","숫자 4자리를 넣어주세요.");
   $("pinGo").disabled=true;
   try{
-    const r=await api(`/api/rooms/${roomId}/open`,{who:pickIdx,pin,claim:!room.claimed[pickIdx]});
-    room.claimed[pickIdx]=true;
-    const all=getJ(MINE,{});if($("remember").checked){all[roomId]={who:pickIdx,pin};}else delete all[roomId];setJ(MINE,all);
-    showEnvelope(r,pickIdx);
+    const c={who:pickIdx,pin};
+    const r=await api(`/api/rooms/${roomId}/open`,{...c,claim:!room.claimed[pickIdx]});
+    room.claimed[pickIdx]=true;cred=c;
+    const all=getJ(MINE,{});if($("remember").checked)all[roomId]=c;else delete all[roomId];setJ(MINE,all);
+    showMine(r,false);
   }catch(e){
     if(e.code==="unclaimed"){room.claimed[pickIdx]=false;showPin(pickIdx);}
-    else if(e.code==="wrong_pin"&&!room.claimed[pickIdx]){room.claimed[pickIdx]=true;}
+    else if(e.code==="wrong_pin"&&!room.claimed[pickIdx])room.claimed[pickIdx]=true;
     err("pinErr",e.message);
   }
   $("pinGo").disabled=false;
 };
-function showEnvelope(r,who){
-  mine={...r,who};
-  show(["envCard","countCard","toPick"].concat(room.result?["resultCard"]:[]));
-  $("rEyebrow").textContent="비밀 봉투";$("rTitle").textContent=r.me+"님께";$("rEmblem").textContent=first(r.me);
+
+function showMine(r,returning){
+  me=r;
+  show(["mine","toPick"].concat(room.result?["boardCard","resultCard"]:[]));
+  head("비밀 봉투",r.me+"님께",first(r.me));
   $("target").textContent=r.target;
-  $("stage").classList.remove("open");$("afterOpen").hidden=true;$("ideas").hidden=true;
-  $("seal").onclick=()=>{$("stage").classList.add("open");$("afterOpen").hidden=false;$("ideas").hidden=false;};
-  startCount();renderResult();window.scrollTo(0,0);
+  // 다시 들어온 사람은 봉투가 이미 열린 상태로
+  $("stage").classList.toggle("open",!!returning);$("afterOpen").hidden=!returning;
+  $("seal").onclick=()=>{$("stage").classList.add("open");$("afterOpen").hidden=false;};
+  $("tabs").hidden=over();
+  document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=over()||p.dataset.panel!==tab);
+  renderMine(true);startCount();renderResult();window.scrollTo(0,0);
 }
-$("toPick").onclick=()=>{mine=null;showPick();};
+function setTab(t){
+  tab=t;
+  document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=p.dataset.panel!==t);
+  if(t==="notes"&&me){const s=getJ(SEEN,{});s[roomId]=me.inbox.length;setJ(SEEN,s);$("noteDot").hidden=true;}
+}
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+function renderMine(initial){
+  const r=me;
+  $("sPts").textContent=r.points;$("sDone").textContent=r.done.length;$("sLeft").textContent=Math.max(0,r.left.done);
+  // 카드
+  const mc=$("mcard");
+  if(r.card){
+    $("cStars").textContent="★".repeat(r.card.pts)+"☆".repeat(3-r.card.pts);
+    $("cTitle").textContent=r.card.title;$("cDesc").textContent=r.card.desc;$("cPts").textContent=`+${r.card.pts}점`;
+    if(initial)mc.classList.add("noanim");
+    mc.classList.add("flipped");
+    if(initial)requestAnimationFrame(()=>requestAnimationFrame(()=>mc.classList.remove("noanim")));
+  }else mc.classList.remove("flipped");
+  $("cardBtns").hidden=!r.card;$("draw").hidden=!!r.card;
+  $("pass").disabled=r.left.pass<=0;$("pass").textContent=r.left.pass>0?"패스":"패스 (오늘 사용함)";
+  $("draw").disabled=r.left.done<=0;$("draw").textContent=r.left.done>0?"카드 뽑기":"오늘 미션 끝! 내일 또 뽑아요";
+  $("deckInfo").textContent=r.left.done>0?"눌러서 미션 뽑기":"내일 다시 뽑을 수 있어요";
+  $("doneCard").hidden=!r.done.length;
+  $("doneList").innerHTML=r.done.slice().reverse().map(d=>`<li><span>${esc(d.title)}</span><span class="s">${"★".repeat(d.pts)}</span></li>`).join("");
+  // 쪽지
+  $("noteTo").textContent=`${r.target}님에게 익명 쪽지`;
+  $("sendNote").disabled=r.left.notes<=0;
+  $("sendNote").textContent=r.left.notes>0?`익명으로 보내기 (오늘 ${r.left.notes}번 남음)`:"오늘 쪽지는 다 보냈어요";
+  $("cheer").textContent=r.cheer;
+  $("inbox").innerHTML=r.inbox.length?r.inbox.map(n=>`<div class="note">${esc(n.text)}<time>${fmtShort.format(new Date(n.at))}</time></div>`).join(""):`<p class="empty">아직 받은 쪽지가 없어요</p>`;
+  const seen=getJ(SEEN,{})[roomId]||0;$("noteDot").hidden=!(r.inbox.length>seen)||tab==="notes";
+  if(tab==="notes"){const s=getJ(SEEN,{});s[roomId]=r.inbox.length;setJ(SEEN,s);}
+  // 맞히기
+  const others=room.names.map((n,i)=>({n,i})).filter(x=>x.n!==r.me).sort((a,b)=>a.n.localeCompare(b.n,"ko"));
+  $("guessGrid").innerHTML=others.map(({n,i})=>`<button type="button" class="who${r.guess===n?" sel":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}${r.guess===n?"<small>내가 찍은 사람</small>":""}</span></button>`).join("");
+  $("guessGrid").querySelectorAll("button").forEach(b=>b.onclick=()=>doAct("guess",{guess:+b.dataset.i},"gErr",()=>toast("찍었어요! 공개 때 확인해요")));
+}
+async function doAct(kind,extra,errId,after){
+  if(!cred)return;
+  err(errId,"");
+  try{me=await api(`/api/rooms/${roomId}/${kind}`,{...cred,...extra});renderMine(false);after&&after();}
+  catch(e){err(errId,e.message);if(e.code==="over")loadRoom(roomId);}
+}
+$("draw").onclick=()=>doAct("draw",{},"mErr");
+$("mcard").onclick=()=>{if(!me.card&&me.left.done>0)doAct("draw",{},"mErr");};
+$("done").onclick=()=>{const p=me.card?.pts||0;doAct("done",{},"mErr",()=>toast(`미션 완료! +${p}점`));};
+$("pass").onclick=()=>doAct("pass",{},"mErr",()=>toast("패스했어요"));
+$("noteText").addEventListener("input",()=>{$("noteCount").textContent=`${$("noteText").value.length}/120`;});
+$("sendNote").onclick=()=>{
+  const text=$("noteText").value.trim();if(!text)return err("nErr","쪽지 내용을 써주세요.");
+  doAct("note",{text},"nErr",()=>{$("noteText").value="";$("noteCount").textContent="0/120";toast("익명 쪽지를 보냈어요");});
+};
+$("toPick").onclick=()=>showPick();
+
 function startCount(){clearInterval(timer);$("rCount").innerHTML="";tick();timer=setInterval(tick,1000);}
 async function tick(){
   if(!room)return;
   const left=room.reveal-(Date.now()+room.skew),box=$("rCount");
   if(left<=0){
     box.innerHTML=`<p class="revealed-msg">결과가 공개됐어요!</p>`;clearInterval(timer);
-    $("share").hidden=!mine;
-    if(!room.result){try{const fresh=await api("/api/rooms/"+roomId);room.result=fresh.result;room.claimed=fresh.claimed;}catch(e){}}
+    $("share").hidden=!me;
+    if(!room.result){try{const f=await api("/api/rooms/"+roomId);Object.assign(room,{result:f.result,scores:f.scores,claimed:f.claimed});}catch(e){}
+      if(me)showMine(me,true);}
     renderResult();return;
   }
   $("share").hidden=true;
@@ -423,17 +615,28 @@ async function tick(){
   if(!box.querySelector(".segs"))box.innerHTML=`<div class="segs">${["일","시간","분","초"].map(u=>`<div class="seg"><b></b><span>${u}</span></div>`).join("")}</div>`;
   box.querySelectorAll(".seg b").forEach((b,i)=>b.textContent=i===0?v[i]:String(v[i]).padStart(2,"0"));
 }
-$("share").onclick=e=>{if(mine)copy(`[마니또 공개] ${mine.me}의 마니또는 바로 ${mine.target}! 🎁`,e.currentTarget);};
+$("share").onclick=e=>{if(me)copy(`[마니또 공개] ${me.me}의 마니또는 바로 ${me.target}! 🎁 (미션 ${me.done.length}개 · ${me.points}점)`,e.currentTarget);};
+
 function renderResult(){
-  if(!room.result){$("resultCard").hidden=true;return;}
-  $("resultCard").hidden=false;
-  // 결과를 원 순서로 정렬
-  const to=new Map(room.result),start=room.result[0][0],cyc=[start];
+  const has=!!room.result;
+  $("boardCard").hidden=!has||!room.scores;$("resultCard").hidden=!has;
+  if(!has)return;
+  const myName=me?me.me:null;
+  if(room.scores){
+    const sc=room.scores.slice().sort((a,b)=>b.total-a.total||b.missions-a.missions||a.name.localeCompare(b.name,"ko"));
+    const best=sc[0].total;
+    const tops=sc.filter(s=>s.total===best&&best>0).map(s=>s.name);
+    $("award").innerHTML=tops.length?`<span class="crown" aria-hidden="true">👑</span><span class="muted small">최고의 마니또</span><b>${tops.map(esc).join(", ")}</b>`:`<span class="muted small">점수판</span>`;
+    let rank=0,prev=null;
+    $("board").innerHTML=sc.map((s,k)=>{if(s.total!==prev){rank=k+1;prev=s.total;}
+      return `<li class="${rank===1&&best>0?"top":""}${s.name===myName?" me":""}"><span class="rank">${rank}</span><span class="nm">${esc(s.name)}<small>미션 ${s.missions}개 · ${s.missionPts}점 · ${s.guess?`${esc(s.guess)} 찍음 ${s.right?"✓ +3":"✗"}`:"안 찍음"}</small></span><span class="tot">${s.total}</span></li>`;}).join("");
+  }
+  const to=new Map(room.result),cyc=[room.result[0][0]];
   for(let k=1;k<room.result.length;k++){const nx=to.get(cyc[cyc.length-1]);if(!nx||cyc.includes(nx))break;cyc.push(nx);}
   const names=cyc.length===room.result.length?cyc:room.result.map(p=>p[0]);
-  const me=mine?names.indexOf(mine.me):-1;
-  $("cycle").innerHTML=cycleSvg(names,me);
-  $("chain").innerHTML=names.map((n,i)=>`<li${i===me?' class="me"':''}><span>${esc(n)}</span><span class="arrow">챙겨줬어요 →</span><span class="to">${esc(to.get(n))}</span></li>`).join("");
+  const mi=myName?names.indexOf(myName):-1;
+  $("cycle").innerHTML=cycleSvg(names,mi);
+  $("chain").innerHTML=names.map((n,i)=>`<li${i===mi?' class="me"':''}><span>${esc(n)}</span><span class="arrow">챙겨줬어요 →</span><span class="to">${esc(to.get(n))}</span></li>`).join("");
 }
 function cycleSvg(names,me){
   const n=names.length,cx=180,cy=165,r=108,pts=names.map((_,i)=>{const a=(-90+i*360/n)*Math.PI/180;return [cx+r*Math.cos(a),cy+r*Math.sin(a),a];});
@@ -451,11 +654,7 @@ function route(){
   const h=location.hash.slice(1);
   $("create").hidden=true;$("room").hidden=true;
   if(/^[a-z0-9]{10}$/.test(h)){$("room").hidden=false;loadRoom(h);}
-  else{
-    $("create").hidden=false;
-    if(!$("names").children.length){for(let i=0;i<7;i++)addRow("");whenPreview();}
-    showMade();
-  }
+  else{$("create").hidden=false;if(!$("names").children.length){for(let i=0;i<7;i++)addRow("");whenPreview();}showMade();}
   window.scrollTo(0,0);
 }
 window.addEventListener("hashchange",route);
