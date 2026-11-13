@@ -217,6 +217,51 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
 .toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);opacity:0;background:var(--fg);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:700;font-size:14px;transition:opacity .25s,transform .25s;pointer-events:none;z-index:20;white-space:nowrap}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 @media (prefers-reduced-motion:reduce){.mcard .inner,.toast{transition:none}}
+.scorebar.four{grid-template-columns:repeat(4,1fr)}
+.scorebar.four b{font-size:21px}
+.qitem{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.qitem:first-child{border-top:0;padding-top:0}
+.qitem .q{font-weight:700}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.opts button{padding:10px 6px;font-size:14px;overflow-wrap:anywhere;background:var(--sunk)}
+.opts button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok);font-weight:700}
+.opts button.wrong{background:var(--seal-soft);border-color:var(--seal);color:var(--seal);text-decoration:line-through}
+.opts button[disabled]{opacity:1}
+.asks{display:flex;flex-direction:column;gap:8px}
+.ask{background:var(--sunk);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:14px}
+.ask .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.ask .q{font-weight:500;overflow-wrap:anywhere}
+.ask .a{flex:none;font-weight:700;border-radius:999px;padding:1px 10px;font-size:13px;background:var(--surface)}
+.ask .a.wait{color:var(--muted);font-weight:400}
+.ask .a.lie{background:var(--seal);color:var(--on-seal)}
+.ask .yn{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ask .yn button{padding:8px;font-weight:700}
+.ask label{display:flex;gap:6px;align-items:center;font-size:13px}
+.ask label input{width:16px;height:16px;accent-color:var(--seal)}
+.shop{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--sunk)}
+.item .ic{flex:none;width:36px;height:36px;border-radius:10px;background:var(--surface);display:grid;place-items:center;font-size:18px}
+.item .tx{flex:1;min-width:0;font-size:14px;font-weight:500}
+.item .tx small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+.item button{flex:none;padding:8px 12px;font-weight:700;font-size:14px}
+.note.hint{border-radius:12px;background:var(--seal-soft)}
+.who.elim{opacity:.45}
+.sugs{display:flex;flex-wrap:wrap;gap:6px}
+.sugs button{font-size:13px;padding:6px 10px;border-radius:999px;background:var(--sunk)}
+.qf{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-top:1px solid var(--line)}
+.qf:first-child{border-top:0}
+.qf .lbl{font-size:12px;font-weight:700;color:var(--seal)}
+.qf .two{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.qf input.ans{border-color:var(--ok)}
+.photo-btn{flex:none;font-size:12px;padding:4px 10px;border-radius:999px}
+.photo-btn.has{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
+.done-list li{align-items:center}
+.done-list .l{min-width:0;overflow-wrap:anywhere}
+.album{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.album figure{margin:0;display:flex;flex-direction:column;gap:4px}
+.album img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;background:var(--sunk)}
+.album figcaption{font-size:12px;color:var(--muted);line-height:1.4}
+.album figcaption b{color:var(--fg)}
 </style>
 </head>
 <body>
@@ -320,24 +365,30 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
       <button class="primary" id="share" type="button" hidden>내 마니또 공개 메시지 복사</button>
     </section>
 
+    <section class="card" id="scoreCard">
+      <div class="card-head"><h2>내 점수</h2><span class="badge ok" id="sBal"></span></div>
+      <div class="scorebar four">
+        <div><b id="sMis">0</b><span>미션</span></div>
+        <div><b id="sQuiz">0</b><span>퀴즈</span></div>
+        <div><b id="sSpent">0</b><span>힌트에 씀</span></div>
+        <div><b id="sLeft">3</b><span>오늘 남은 미션</span></div>
+      </div>
+    </section>
+
     <nav class="tabs" role="tablist" id="tabs">
-      <button role="tab" type="button" data-tab="mission" aria-selected="true">미션 카드</button>
-      <button role="tab" type="button" data-tab="notes" aria-selected="false">쪽지<span class="dot" id="noteDot" hidden></span></button>
-      <button role="tab" type="button" data-tab="guess" aria-selected="false">정체 맞히기</button>
+      <button role="tab" type="button" data-tab="give" aria-selected="true">챙겨주기<span class="dot" id="dotGive" hidden></span></button>
+      <button role="tab" type="button" data-tab="find" aria-selected="false">추리하기<span class="dot" id="dotFind" hidden></span></button>
+      <button role="tab" type="button" data-tab="quiz" aria-selected="false">내 퀴즈<span class="dot" id="dotQuiz" hidden></span></button>
     </nav>
 
-    <!-- 미션 -->
-    <div class="stack" data-panel="mission">
+    <!-- 챙겨주기 -->
+    <div class="stack" data-panel="give">
       <section class="card">
-        <div class="scorebar">
-          <div><b id="sPts">0</b><span>내 점수</span></div>
-          <div><b id="sDone">0</b><span>완료한 미션</span></div>
-          <div><b id="sLeft">3</b><span>오늘 남은 미션</span></div>
-        </div>
+        <div class="card-head"><h2>미션 카드</h2><span class="muted small">하루 3개 · 패스 1번</span></div>
         <div class="deck">
           <button class="mcard" id="mcard" type="button" aria-label="미션 카드">
             <div class="inner">
-              <div class="face back"><div class="mark">마</div><p>카드 뽑기</p><small id="deckInfo">눌러서 오늘의 미션 뽑기</small></div>
+              <div class="face back"><div class="mark">마</div><p>카드 뽑기</p><small id="deckInfo">눌러서 미션 뽑기</small></div>
               <div class="face front">
                 <span class="stars" id="cStars"></span>
                 <div style="display:flex;flex-direction:column;gap:8px"><h3 id="cTitle"></h3><p id="cDesc"></p></div>
@@ -352,38 +403,79 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
           <button class="danger" id="done" type="button">완료했어요 ✓</button>
         </div>
         <button class="primary" id="draw" type="button">카드 뽑기</button>
-        <p class="muted small" style="text-align:center">완료는 양심에 맡겨요. 하루 미션 3개, 패스 1번.</p>
+        <p class="muted small" style="text-align:center">완료는 양심에 맡겨요. 사진을 남기면 공개 때 앨범에 나와요.</p>
       </section>
       <section class="card" id="doneCard" hidden>
         <h2>완료한 미션</h2>
         <ul class="done-list" id="doneList"></ul>
+        <input type="file" id="photoInput" accept="image/*" hidden>
+        <p class="err" id="phErr" hidden></p>
       </section>
-    </div>
 
-    <!-- 쪽지 -->
-    <div class="stack" data-panel="notes" hidden>
+      <section class="card">
+        <h2 id="tqTitle"></h2>
+        <div id="tQuiz"></div>
+        <p class="err" id="tqErr" hidden></p>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2 id="taTitle"></h2><span class="badge" id="lieBadge"></span></div>
+        <p class="small muted">나를 의심하는 질문이 와요. 예/아니오로 답해주세요. 거짓말은 딱 한 번만 할 수 있고, 공개 때 들통나요!</p>
+        <div class="asks" id="tAsks"></div>
+        <p class="err" id="taErr" hidden></p>
+      </section>
+
       <section class="card">
         <h2 id="noteTo"></h2>
         <p class="small muted">이름 없이 전달돼요. 말투로 들키지 않게 조심!</p>
-        <textarea id="noteText" maxlength="120" placeholder="응원 한마디, 수수께끼 힌트…"></textarea>
+        <textarea id="noteText" maxlength="120" placeholder="응원 한마디, 헷갈리게 할 힌트…"></textarea>
         <div class="counter" id="noteCount">0/120</div>
         <p class="err" id="nErr" hidden></p>
         <button class="primary" id="sendNote" type="button">익명으로 보내기</button>
       </section>
+    </div>
+
+    <!-- 추리하기 -->
+    <div class="stack" data-panel="find" hidden>
       <section class="card">
-        <h2>내 쪽지함</h2>
+        <h2>받은 쪽지</h2>
         <div class="cheer"><b id="cheer">0</b><span>내 마니또가 나를 위해 완료한 미션 수</span></div>
         <div class="notes" id="inbox"></div>
       </section>
-    </div>
 
-    <!-- 맞히기 -->
-    <div class="stack" data-panel="guess" hidden>
+      <section class="card">
+        <h2>스무고개</h2>
+        <p class="small muted">내 마니또에게 예/아니오 질문을 보내요. 하루 2개. 한 번은 거짓말일 수도 있어요.</p>
+        <div class="row"><input id="askText" maxlength="40" placeholder="예) 안경 썼어?" autocomplete="off"><button id="askGo" type="button" style="flex:none">보내기</button></div>
+        <p class="err" id="askErr" hidden></p>
+        <div class="asks" id="myAsks"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><h2>힌트 상점</h2><span class="badge ok" id="shopBal"></span></div>
+        <div class="shop" id="shop"></div>
+        <p class="err" id="hErr" hidden></p>
+        <div class="notes" id="hints"></div>
+      </section>
+
       <section class="card">
         <h2>나를 챙겨주는 사람은 누구일까?</h2>
         <p class="small muted">공개 전까지 몇 번이든 바꿀 수 있어요. 맞히면 <b>+3점</b>!</p>
         <div class="who-grid" id="guessGrid"></div>
         <p class="err" id="gErr" hidden></p>
+      </section>
+    </div>
+
+    <!-- 내 퀴즈 -->
+    <div class="stack" data-panel="quiz" hidden>
+      <section class="card" id="quizStatus" hidden></section>
+      <section class="card" id="quizForm">
+        <h2>나에 대한 퀴즈 내기</h2>
+        <p class="small muted">내 마니또가 풀어요. 맞히면 마니또가 점수를 얻으니, 알아낼 수 있을 만한 문제를 내주세요. 마니또가 풀기 시작하면 바꿀 수 없어요.</p>
+        <div class="sugs" id="sugs"></div>
+        <div id="qFields"></div>
+        <p class="err" id="qErr" hidden></p>
+        <button class="primary" id="qSave" type="button">퀴즈 저장</button>
       </section>
     </div>
   </div>
@@ -392,7 +484,17 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
   <section class="card" id="boardCard" hidden>
     <div class="award" id="award"></div>
     <ol class="board" id="board"></ol>
-    <p class="muted small">점수 = 완료한 미션의 별 개수 + 정체를 맞히면 3점</p>
+    <p class="muted small">점수 = 미션 별 + 퀴즈 정답×2 + 정체 맞히면 3 − 힌트에 쓴 점수</p>
+  </section>
+
+  <section class="card" id="albumCard" hidden>
+    <h2>증거 사진 앨범</h2>
+    <div class="album" id="album"></div>
+  </section>
+
+  <section class="card" id="liesCard" hidden>
+    <h2>거짓말 폭로</h2>
+    <div class="notes" id="lies"></div>
   </section>
 
   <section class="card" id="resultCard" hidden>
@@ -475,8 +577,9 @@ function showMade(){
 $("again").onclick=()=>{try{localStorage.removeItem(MADE);}catch(e){}showMade();};
 
 /* ---------- 방 ---------- */
-let room=null,roomId=null,pickIdx=-1,me=null,cred=null,timer=null,tab="mission";
-const SECTIONS=["pick","pinCard","mine","boardCard","resultCard","toPick"];
+let room=null,roomId=null,pickIdx=-1,me=null,cred=null,timer=null,tab="give";
+const RES=["boardCard","albumCard","liesCard","resultCard"];
+const SECTIONS=["pick","pinCard","mine","toPick",...RES];
 const show=ids=>SECTIONS.forEach(id=>$(id).hidden=!ids.includes(id));
 const over=()=>room&&Date.now()+room.skew>=room.reveal;
 function head(eyebrow,title,em){$("rEyebrow").textContent=eyebrow;$("rTitle").textContent=title;$("rEmblem").textContent=em;}
@@ -494,7 +597,7 @@ async function loadRoom(id){
 }
 function showPick(){
   me=null;cred=null;
-  show(["pick"].concat(room.result?["boardCard","resultCard"]:[]));
+  show(["pick"].concat(room.result?RES:[]));
   head(over()?"결과 공개":"마니또 진행 중",`${room.title} · ${room.names.length}명`,"마");
   $("claimCount").textContent=`${room.claimed.filter(Boolean).length}/${room.names.length} 확인`;
   const order=room.names.map((n,i)=>({n,i})).sort((a,b)=>a.n.localeCompare(b.n,"ko"));
@@ -531,30 +634,43 @@ $("pinGo").onclick=async()=>{
   $("pinGo").disabled=false;
 };
 
+const SUGS=["내가 제일 좋아하는 음식은?","내 MBTI는?","주말에 나는 주로 뭘 할까?","내가 제일 싫어하는 음식은?","내 버킷리스트 1순위는?","어릴 때 내 꿈은?","요즘 내가 빠져 있는 것은?","내가 좋아하는 계절은?"];
+let photoK=-1;
+function seen(){return getJ(SEEN,{})[roomId]||{};}
+function setSeen(o){const s=getJ(SEEN,{});s[roomId]={...seen(),...o};setJ(SEEN,s);}
+
 function showMine(r,returning){
   me=r;
-  show(["mine","toPick"].concat(room.result?["boardCard","resultCard"]:[]));
-  head("비밀 봉투",r.me+"님께",first(r.me));
+  const ov=over();
+  show(["mine","toPick"].concat(room.result?RES:[]));
+  head(ov?"결과 공개":"비밀 봉투",r.me+"님께",first(r.me));
   $("target").textContent=r.target;
-  // 다시 들어온 사람은 봉투가 이미 열린 상태로
   $("stage").classList.toggle("open",!!returning);$("afterOpen").hidden=!returning;
   $("seal").onclick=()=>{$("stage").classList.add("open");$("afterOpen").hidden=false;};
-  $("tabs").hidden=over();
-  document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=over()||p.dataset.panel!==tab);
-  renderMine(true);startCount();renderResult();window.scrollTo(0,0);
+  $("tabs").hidden=ov;$("scoreCard").hidden=ov;
+  document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=ov||p.dataset.panel!==tab);
+  buildQuizForm();renderMine(true);startCount();renderResult();window.scrollTo(0,0);
 }
 function setTab(t){
   tab=t;
   document.querySelectorAll("#tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   document.querySelectorAll("[data-panel]").forEach(p=>p.hidden=p.dataset.panel!==t);
-  if(t==="notes"&&me){const s=getJ(SEEN,{});s[roomId]=me.inbox.length;setJ(SEEN,s);$("noteDot").hidden=true;}
+  markSeen();renderDots();
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+function markSeen(){if(me&&tab==="find")setSeen({notes:me.inbox.length,ans:me.myAsks.filter(a=>a.ans).length});}
+function renderDots(){
+  if(!me)return;const s=seen();
+  $("dotGive").hidden=!me.tAsks.some(a=>!a.ans);
+  $("dotFind").hidden=tab==="find"||!(me.inbox.length>(s.notes||0)||me.myAsks.filter(a=>a.ans).length>(s.ans||0));
+  $("dotQuiz").hidden=!!me.myQuiz;
+}
 
 function renderMine(initial){
-  const r=me;
-  $("sPts").textContent=r.points;$("sDone").textContent=r.done.length;$("sLeft").textContent=Math.max(0,r.left.done);
-  // 카드
+  const r=me,P=r.points;
+  $("sMis").textContent=P.mission;$("sQuiz").textContent=P.quiz;$("sSpent").textContent=P.spent?"−"+P.spent:"0";
+  $("sLeft").textContent=Math.max(0,r.left.done);$("sBal").textContent=`쓸 수 있는 점수 ${P.balance}`;
+  /* 미션 카드 */
   const mc=$("mcard");
   if(r.card){
     $("cStars").textContent="★".repeat(r.card.pts)+"☆".repeat(3-r.card.pts);
@@ -564,24 +680,98 @@ function renderMine(initial){
     if(initial)requestAnimationFrame(()=>requestAnimationFrame(()=>mc.classList.remove("noanim")));
   }else mc.classList.remove("flipped");
   $("cardBtns").hidden=!r.card;$("draw").hidden=!!r.card;
-  $("pass").disabled=r.left.pass<=0;$("pass").textContent=r.left.pass>0?"패스":"패스 (오늘 사용함)";
+  $("pass").disabled=r.left.pass<=0;$("pass").textContent=r.left.pass>0?"패스":"패스 (오늘 씀)";
   $("draw").disabled=r.left.done<=0;$("draw").textContent=r.left.done>0?"카드 뽑기":"오늘 미션 끝! 내일 또 뽑아요";
   $("deckInfo").textContent=r.left.done>0?"눌러서 미션 뽑기":"내일 다시 뽑을 수 있어요";
   $("doneCard").hidden=!r.done.length;
-  $("doneList").innerHTML=r.done.slice().reverse().map(d=>`<li><span>${esc(d.title)}</span><span class="s">${"★".repeat(d.pts)}</span></li>`).join("");
-  // 쪽지
+  $("doneList").innerHTML=r.done.slice().reverse().map(d=>`<li><span class="l">${esc(d.title)} <span class="s">${"★".repeat(d.pts)}</span></span><button type="button" class="photo-btn${d.photo?" has":""}" data-k="${d.k}">${d.photo?"사진 ✓":"📷 사진"}</button></li>`).join("");
+  $("doneList").querySelectorAll(".photo-btn").forEach(b=>b.onclick=()=>{photoK=+b.dataset.k;$("photoInput").value="";$("photoInput").click();});
+  /* 대상의 퀴즈 */
+  $("tqTitle").textContent=`${r.target}님의 퀴즈`;
+  $("tQuiz").innerHTML=!r.tQuiz?`<p class="empty">아직 ${esc(r.target)}님이 퀴즈를 안 냈어요.<br>단톡방에서 "다들 퀴즈 냈어?" 하고 슬쩍 물어보세요.</p>`:
+    r.tQuiz.map((q,k)=>{const done=q.mine!=null;
+      return `<div class="qitem"><div class="card-head"><span class="q">Q${k+1}. ${esc(q.q)}</span>${done?`<span class="badge${q.mine===q.ans?" ok":""}">${q.mine===q.ans?"정답 +2":"오답"}</span>`:""}</div><div class="opts">${q.opts.map((o,c)=>`<button type="button" data-k="${k}" data-c="${c}"${done?" disabled":""} class="${done&&c===q.ans?"right":done&&c===q.mine?"wrong":""}">${esc(o)}</button>`).join("")}</div></div>`;}).join("");
+  $("tQuiz").querySelectorAll("button:not([disabled])").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;
+    doAct("solve",{k,c:+b.dataset.c},"tqErr",()=>{const q=me.tQuiz[k];toast(q.mine===q.ans?"정답! +2점":"아쉽게도 오답이에요");});});
+  /* 받은 스무고개 질문 */
+  $("taTitle").textContent=`${r.target}님이 보낸 질문`;
+  $("lieBadge").textContent=`거짓말 찬스 ${r.lieLeft}번`;$("lieBadge").className="badge"+(r.lieLeft?"":" ok");
+  $("tAsks").innerHTML=r.tAsks.length?r.tAsks.slice().reverse().map(a=>a.ans?
+      `<div class="ask"><div class="top"><span class="q">${esc(a.q)}</span><span class="a${a.lie?" lie":""}">${a.ans}${a.lie?" (거짓말)":""}</span></div></div>`:
+      `<div class="ask"><div class="top"><span class="q">${esc(a.q)}</span><span class="a wait">답해주세요</span></div><div class="yn"><button type="button" data-k="${a.k}" data-a="예">예</button><button type="button" data-k="${a.k}" data-a="아니오">아니오</button></div>${r.lieLeft?`<label><input type="checkbox" id="lie-${a.k}"> 거짓말 찬스 쓰기 (한 번뿐)</label>`:""}</div>`).join("")
+    :`<p class="empty">아직 받은 질문이 없어요</p>`;
+  $("tAsks").querySelectorAll(".yn button").forEach(b=>b.onclick=()=>{const k=+b.dataset.k,lie=!!$("lie-"+k)?.checked;
+    doAct("answer",{k,ans:b.dataset.a,lie},"taErr",()=>toast(lie?"거짓말 찬스를 썼어요 🤫":"답했어요"));});
+  /* 쪽지 보내기 */
   $("noteTo").textContent=`${r.target}님에게 익명 쪽지`;
   $("sendNote").disabled=r.left.notes<=0;
   $("sendNote").textContent=r.left.notes>0?`익명으로 보내기 (오늘 ${r.left.notes}번 남음)`:"오늘 쪽지는 다 보냈어요";
+
+  /* 추리하기 */
   $("cheer").textContent=r.cheer;
   $("inbox").innerHTML=r.inbox.length?r.inbox.map(n=>`<div class="note">${esc(n.text)}<time>${fmtShort.format(new Date(n.at))}</time></div>`).join(""):`<p class="empty">아직 받은 쪽지가 없어요</p>`;
-  const seen=getJ(SEEN,{})[roomId]||0;$("noteDot").hidden=!(r.inbox.length>seen)||tab==="notes";
-  if(tab==="notes"){const s=getJ(SEEN,{});s[roomId]=r.inbox.length;setJ(SEEN,s);}
-  // 맞히기
+  $("askGo").disabled=r.left.asks<=0;$("askGo").textContent=r.left.asks>0?`보내기 (${r.left.asks})`:"내일 또";
+  $("myAsks").innerHTML=r.myAsks.slice().reverse().map(a=>`<div class="ask"><div class="top"><span class="q">${esc(a.q)}</span><span class="a${a.ans?"":" wait"}${a.lie?" lie":""}">${a.ans?a.ans+(a.lie?" (거짓말이었어요!)":""):"답 기다리는 중"}</span></div></div>`).join("");
+  const SHOP=[["len","🔤","이름 글자 수","내 마니또 이름이 몇 글자인지"],["elim","🙅","이 사람은 아니에요","후보 한 명을 지워줘요 · 살 때마다 1점씩 올라요"],["cho","🔍","이름 초성 하나","이름 글자 하나의 초성을 알려줘요 · 살 때마다 1점씩 올라요"]];
+  $("shopBal").textContent=`쓸 수 있는 점수 ${P.balance}`;
+  $("shop").innerHTML=SHOP.map(([t,ic,name,desc])=>{const pr=r.prices[t];
+    return `<div class="item"><span class="ic" aria-hidden="true">${ic}</span><span class="tx">${name}<small>${desc}</small></span><button type="button" data-t="${t}" data-p="${pr??""}"${pr==null||P.balance<pr?" disabled":""}>${pr==null?"다 샀어요":pr+"점"}</button></div>`;}).join("");
+  $("shop").querySelectorAll("button").forEach(b=>b.onclick=()=>{
+    if(!b.classList.contains("arm")){b.classList.add("arm");b.textContent=`${b.dataset.p}점 쓰기?`;setTimeout(()=>{if(b.isConnected){b.classList.remove("arm");b.textContent=b.dataset.p+"점";}},3000);return;}
+    doAct("hint",{type:b.dataset.t},"hErr",()=>toast("힌트를 샀어요"));});
+  $("hints").innerHTML=r.hints.slice().reverse().map(h=>`<div class="note hint">${esc(h.text)}<time>${h.cost}점 사용</time></div>`).join("");
   const others=room.names.map((n,i)=>({n,i})).filter(x=>x.n!==r.me).sort((a,b)=>a.n.localeCompare(b.n,"ko"));
-  $("guessGrid").innerHTML=others.map(({n,i})=>`<button type="button" class="who${r.guess===n?" sel":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}${r.guess===n?"<small>내가 찍은 사람</small>":""}</span></button>`).join("");
+  $("guessGrid").innerHTML=others.map(({n,i})=>{const el=r.elim.includes(n);
+    return `<button type="button" class="who${r.guess===n?" sel":""}${el?" elim":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}${r.guess===n?"<small>내가 찍은 사람</small>":el?"<small>힌트: 아님</small>":""}</span></button>`;}).join("");
   $("guessGrid").querySelectorAll("button").forEach(b=>b.onclick=()=>doAct("guess",{guess:+b.dataset.i},"gErr",()=>toast("찍었어요! 공개 때 확인해요")));
+
+  /* 내 퀴즈 */
+  const qs=$("quizStatus");
+  if(r.myQuiz){
+    const s=r.myQuizSolved;
+    qs.hidden=false;
+    qs.innerHTML=`<div class="card-head"><h2>내가 낸 퀴즈</h2><span class="badge${s.n?" ok":""}">${s.n?`${s.n}/3 풀림 · ${s.right}개 정답`:"아직 안 풀었어요"}</span></div>`+
+      r.myQuiz.map((q,k)=>`<div class="qitem"><span class="q">Q${k+1}. ${esc(q.q)}</span><div class="opts">${q.opts.map((o,c)=>`<button type="button" disabled class="${c===q.ans?"right":""}">${esc(o)}</button>`).join("")}</div></div>`).join("")+
+      (r.quizLocked?`<p class="muted small">내 마니또가 풀기 시작해서 이제 바꿀 수 없어요.</p>`:`<p class="muted small">아직 아무도 안 풀었어요. 아래에서 고칠 수 있어요.</p>`);
+  }else qs.hidden=true;
+  $("quizForm").hidden=r.quizLocked;
+  markSeen();renderDots();
 }
+
+function buildQuizForm(){
+  const q=me&&me.myQuiz;
+  $("qFields").innerHTML=[0,1,2].map(k=>{const it=q&&q[k],a=it?it.opts[it.ans]:"",w=it?it.opts.filter((_,c)=>c!==it.ans):["",""];
+    return `<div class="qf"><span class="lbl">문제 ${k+1}</span><input id="q${k}" maxlength="60" placeholder="질문 (위 예시를 눌러도 돼요)" value="${esc(it?it.q:"")}"><input class="ans" id="a${k}" maxlength="30" placeholder="정답" value="${esc(a)}"><div class="two"><input id="w${k}0" maxlength="30" placeholder="오답 1" value="${esc(w[0])}"><input id="w${k}1" maxlength="30" placeholder="오답 2" value="${esc(w[1])}"></div></div>`;}).join("");
+  $("sugs").innerHTML=SUGS.map(s=>`<button type="button">${esc(s)}</button>`).join("");
+  $("sugs").querySelectorAll("button").forEach(b=>b.onclick=()=>{const empty=[0,1,2].map(k=>$("q"+k)).find(i=>!i.value.trim());if(!empty)return toast("질문 칸이 다 찼어요");empty.value=b.textContent;$("a"+empty.id.slice(1)).focus();});
+}
+$("qSave").onclick=()=>{
+  const quiz=[0,1,2].map(k=>({q:$("q"+k).value.trim(),a:$("a"+k).value.trim(),w:[$("w"+k+"0").value.trim(),$("w"+k+"1").value.trim()]}));
+  if(quiz.some(x=>!x.q||!x.a||!x.w[0]||!x.w[1]))return err("qErr","문제 3개 모두 질문, 정답, 오답 2개를 채워주세요.");
+  if(quiz.some(x=>new Set([x.a,...x.w]).size!==3))return err("qErr","정답과 오답이 같은 문제가 있어요.");
+  doAct("quiz",{quiz},"qErr",()=>{toast("퀴즈를 저장했어요");buildQuizForm();});
+};
+
+function compress(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file),img=new Image();
+    img.onload=()=>{URL.revokeObjectURL(url);let max=1000,q=.72,out="";
+      for(let t=0;t<7;t++){const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement("canvas");
+        c.width=Math.max(1,Math.round(img.naturalWidth*s));c.height=Math.max(1,Math.round(img.naturalHeight*s));
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);out=c.toDataURL("image/jpeg",q);
+        if(out.length*.75<200*1024)break;max*=.8;q=Math.max(.4,q-.08);}
+      res(out.split(",")[1]);};
+    img.onerror=()=>{URL.revokeObjectURL(url);rej(new Error("사진을 열지 못했어요. 다른 사진으로 해주세요."));};
+    img.src=url;
+  });
+}
+$("photoInput").onchange=async()=>{
+  const f=$("photoInput").files[0];if(!f||photoK<0)return;
+  err("phErr","");toast("사진 올리는 중…");
+  try{const data=await compress(f);await doAct("photo",{k:photoK,data},"phErr",()=>toast("사진을 올렸어요. 공개 때 앨범에 나와요"));}
+  catch(e){err("phErr",e.message);}
+};
+
 async function doAct(kind,extra,errId,after){
   if(!cred)return;
   err(errId,"");
@@ -589,14 +779,19 @@ async function doAct(kind,extra,errId,after){
   catch(e){err(errId,e.message);if(e.code==="over")loadRoom(roomId);}
 }
 $("draw").onclick=()=>doAct("draw",{},"mErr");
-$("mcard").onclick=()=>{if(!me.card&&me.left.done>0)doAct("draw",{},"mErr");};
-$("done").onclick=()=>{const p=me.card?.pts||0;doAct("done",{},"mErr",()=>toast(`미션 완료! +${p}점`));};
+$("mcard").onclick=()=>{if(me&&!me.card&&me.left.done>0)doAct("draw",{},"mErr");};
+$("done").onclick=()=>{const p=me.card?.pts||0;doAct("done",{},"mErr",()=>toast(`미션 완료! +${p}점 · 사진도 남겨보세요`));};
 $("pass").onclick=()=>doAct("pass",{},"mErr",()=>toast("패스했어요"));
 $("noteText").addEventListener("input",()=>{$("noteCount").textContent=`${$("noteText").value.length}/120`;});
 $("sendNote").onclick=()=>{
   const text=$("noteText").value.trim();if(!text)return err("nErr","쪽지 내용을 써주세요.");
   doAct("note",{text},"nErr",()=>{$("noteText").value="";$("noteCount").textContent="0/120";toast("익명 쪽지를 보냈어요");});
 };
+$("askGo").onclick=()=>{
+  const q=$("askText").value.trim();if(!q)return err("askErr","질문을 써주세요.");
+  doAct("ask",{q},"askErr",()=>{$("askText").value="";toast("질문을 보냈어요");});
+};
+$("askText").addEventListener("keydown",e=>{if(e.key==="Enter")$("askGo").click();});
 $("toPick").onclick=()=>showPick();
 
 function startCount(){clearInterval(timer);$("rCount").innerHTML="";tick();timer=setInterval(tick,1000);}
@@ -606,7 +801,7 @@ async function tick(){
   if(left<=0){
     box.innerHTML=`<p class="revealed-msg">결과가 공개됐어요!</p>`;clearInterval(timer);
     $("share").hidden=!me;
-    if(!room.result){try{const f=await api("/api/rooms/"+roomId);Object.assign(room,{result:f.result,scores:f.scores,claimed:f.claimed});}catch(e){}
+    if(!room.result){try{const f=await api("/api/rooms/"+roomId);Object.assign(room,f,{skew:room.skew});}catch(e){}
       if(me)showMine(me,true);}
     renderResult();return;
   }
@@ -615,22 +810,29 @@ async function tick(){
   if(!box.querySelector(".segs"))box.innerHTML=`<div class="segs">${["일","시간","분","초"].map(u=>`<div class="seg"><b></b><span>${u}</span></div>`).join("")}</div>`;
   box.querySelectorAll(".seg b").forEach((b,i)=>b.textContent=i===0?v[i]:String(v[i]).padStart(2,"0"));
 }
-$("share").onclick=e=>{if(me)copy(`[마니또 공개] ${me.me}의 마니또는 바로 ${me.target}! 🎁 (미션 ${me.done.length}개 · ${me.points}점)`,e.currentTarget);};
+$("share").onclick=e=>{if(me)copy(`[마니또 공개] ${me.me}의 마니또는 바로 ${me.target}! 🎁 (미션 ${me.done.length}개 완료)`,e.currentTarget);};
 
 function renderResult(){
   const has=!!room.result;
-  $("boardCard").hidden=!has||!room.scores;$("resultCard").hidden=!has;
+  RES.forEach(id=>$(id).hidden=!has);
   if(!has)return;
   const myName=me?me.me:null;
   if(room.scores){
     const sc=room.scores.slice().sort((a,b)=>b.total-a.total||b.missions-a.missions||a.name.localeCompare(b.name,"ko"));
-    const best=sc[0].total;
-    const tops=sc.filter(s=>s.total===best&&best>0).map(s=>s.name);
+    const best=sc[0].total,tops=sc.filter(s=>s.total===best&&best>0).map(s=>s.name);
     $("award").innerHTML=tops.length?`<span class="crown" aria-hidden="true">👑</span><span class="muted small">최고의 마니또</span><b>${tops.map(esc).join(", ")}</b>`:`<span class="muted small">점수판</span>`;
     let rank=0,prev=null;
     $("board").innerHTML=sc.map((s,k)=>{if(s.total!==prev){rank=k+1;prev=s.total;}
-      return `<li class="${rank===1&&best>0?"top":""}${s.name===myName?" me":""}"><span class="rank">${rank}</span><span class="nm">${esc(s.name)}<small>미션 ${s.missions}개 · ${s.missionPts}점 · ${s.guess?`${esc(s.guess)} 찍음 ${s.right?"✓ +3":"✗"}`:"안 찍음"}</small></span><span class="tot">${s.total}</span></li>`;}).join("");
-  }
+      const parts=[`미션 ${s.missionPts}`,`퀴즈 ${s.quizPts??0}`];if(s.spent)parts.push(`힌트 −${s.spent}`);
+      parts.push(s.guess?`${esc(s.guess)} 찍음 ${s.right?"✓ +3":"✗"}`:"안 찍음");
+      return `<li class="${rank===1&&best>0?"top":""}${s.name===myName?" me":""}"><span class="rank">${rank}</span><span class="nm">${esc(s.name)}<small>${parts.join(" · ")}</small></span><span class="tot">${s.total}</span></li>`;}).join("");
+  }else $("boardCard").hidden=true;
+  const al=room.album||[];
+  $("albumCard").hidden=!al.length;
+  $("album").innerHTML=al.map(a=>`<figure><img loading="lazy" src="${API}/api/rooms/${roomId}/img/${a.img}" alt="${esc(a.title)} 증거 사진"><figcaption><b>${esc(a.from)}</b> → ${esc(a.to)}<br>${esc(a.title)}</figcaption></figure>`).join("");
+  const lies=room.lies||[];
+  $("liesCard").hidden=!lies.length;
+  $("lies").innerHTML=lies.map(l=>`<div class="note hint">${esc(l.liar)}님이 ${esc(l.asker)}님의 질문 "${esc(l.q)}"에 '${esc(l.ans)}'라고 거짓말했어요 🤥</div>`).join("");
   const to=new Map(room.result),cyc=[room.result[0][0]];
   for(let k=1;k<room.result.length;k++){const nx=to.get(cyc[cyc.length-1]);if(!nx||cyc.includes(nx))break;cyc.push(nx);}
   const names=cyc.length===room.result.length?cyc:room.result.map(p=>p[0]);
