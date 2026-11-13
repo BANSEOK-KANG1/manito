@@ -1,3 +1,4 @@
 node_modules
 .wrangler/
 api/public-dev/
+api/.dev.vars

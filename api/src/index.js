@@ -1,10 +1,11 @@
+import { kakaoSkill } from "./kakao.js";
 // 마니또 API — 서버가 직접 뽑고, 각자 이름+비밀번호로 자기 것만 받는다.
 // 방마다 Durable Object 하나: 저장 즉시 반영되고 요청이 차례대로 처리된다.
 // 저장 키: "room" (방 정보), "p:<i>" (사람별 상태), "img:<key>" (증거 사진)
 const TTL = 60 * 60 * 24 * 45;
 const MAX_FAILS = 5, LOCK_MS = 10 * 60 * 1000;
 const DONE_PER_DAY = 3, NOTES_PER_DAY = 3, NOTE_MAX = 120, ASKS_PER_DAY = 2, ASK_MAX = 40;
-const GUESS_PTS = 3, QUIZ_PTS = 2, QUIZ_N = 3, IMG_MAX = 220 * 1024, IMG_PER_PERSON = 25;
+const GUESS_PTS = 3, QUIZ_PTS = 2, QUIZ_N = 3, IMG_MAX = 220 * 1024, IMG_MAX_K = 1500 * 1024, IMG_PER_PERSON = 25;
 const ID_CHARS = "abcdefghjkmnpqrstuvwxyz23456789";
 const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
 
@@ -96,7 +97,7 @@ async function publicView(st, room, now) {
   const people = await loadAll(st, room);
   const out = {
     title: room.title, names: room.names, reveal: room.reveal, now,
-    claimed: people.map(p => !!p.pin),
+    claimed: people.map(p => !!(p.pin || p.kid)),
     cheer: room.names.map((_, i) => people[giverOf(room, i)]?.done.length || 0),
   };
   if (now >= room.reveal) {
@@ -119,6 +120,7 @@ function myState(room, i, people, now) {
     me: room.names[i], target: room.names[t], who: i, over,
     // 챙겨주기
     card: p.card != null ? DECK[p.card] : null,
+    deal: p.deal ? p.deal.map(c => DECK[c].pts) : null,
     done: p.done.map((x, k) => ({ ...DECK[x.card], at: x.at, k, photo: !!x.img })),
     left: { done: DONE_PER_DAY - d.done, notes: NOTES_PER_DAY - d.notes, pass: 1 - d.pass, asks: ASKS_PER_DAY - d.asks },
     tQuiz: tp.quiz ? tp.quiz.map((q, k) => {
@@ -156,7 +158,8 @@ async function create(body, st) {
   const target = new Array(names.length);
   order.forEach((p, k) => { target[p] = order[(k + 1) % order.length]; });
   if (await st.get("room")) return fail("exists", "잠시 뒤 다시 해주세요.", 409);
-  await st.put("room", { title, names, reveal, target, created: Date.now(), v: 3 });
+  const code = /^[A-Z0-9]{6}$/.test(body.code || "") ? body.code : undefined;
+  await st.put("room", { title, names, reveal, target, created: Date.now(), v: 3, code });
   return json({ ok: true });
 }
 
@@ -168,6 +171,7 @@ async function auth(st, id, room, body, now) {
   const p = await loadPerson(st, i, room);
   if (p.fails.until > now) return { err: fail("locked", `비밀번호를 여러 번 틀려서 잠시 잠겼어요. ${Math.ceil((p.fails.until - now) / 60000)}분 뒤에 다시 해주세요.`, 429) };
   const h = await sha(`${id}:${i}:${pin}`);
+  if (p.kid) return { err: fail("kakao", "이 이름은 카카오톡 챗봇으로 참가했어요. 챗봇에서 이어서 해주세요.", 403) };
   if (!p.pin) {
     if (body.claim !== true) return { err: fail("unclaimed", "아직 비밀번호가 없어요. 새로 정해주세요.", 409) };
     p.pin = h; await savePerson(st, i, p);
@@ -180,9 +184,18 @@ async function auth(st, id, room, body, now) {
 }
 
 /* ---------- 행동 ---------- */
-async function act(body, st, id, kind, room) {
+// 카톡 챗봇: 워커가 확인한 카카오 사용자(해시)로 본인 확인
+async function kauth(st, room, body) {
+  const i = Number(body?.who);
+  if (!Number.isInteger(i) || i < 0 || i >= room.names.length) return { err: fail("who", "이름을 다시 골라주세요.") };
+  const p = await loadPerson(st, i, room);
+  if (!body.kid || p.kid !== body.kid) return { err: fail("not_me", "이 이름으로 참가한 기록이 없어요. 참가 코드를 다시 보내주세요.", 403) };
+  return { i };
+}
+
+async function act(body, st, id, kind, room, kakao = false) {
   const now = Date.now();
-  const a = await auth(st, id, room, body, now);
+  const a = kakao ? await kauth(st, room, body) : await auth(st, id, room, body, now);
   if (a.err) return a.err;
   const i = a.i, people = await loadAll(st, room);
   const p = people[i], t = room.target[i], tp = people[t];
@@ -193,13 +206,20 @@ async function act(body, st, id, kind, room) {
 
   switch (kind) {
     case "open": dirty.clear(); break;
+    case "deal": // 카드 3장 깔기 (난이도만 보이고, 고른 뒤 미션 공개)
     case "draw": {
       if (p.card != null) return fail("has_card", "이미 뽑은 카드가 있어요. 먼저 완료하거나 패스해 주세요.", 409);
       if (d.done >= DONE_PER_DAY) return fail("limit", `오늘은 미션을 ${DONE_PER_DAY}개 다 했어요. 내일 또 뽑아요!`, 429);
+      if (kind === "draw" && body.pick != null) {
+        const pick = Number(body.pick);
+        if (!p.deal || p.deal[pick] == null) return fail("no_deal", "카드를 다시 깔아주세요.", 409);
+        p.card = p.deal[pick]; p.deal = null; break;
+      }
       const used = new Set(p.done.map(x => x.card));
       let pool = DECK.filter(c => !used.has(c.id) && c.id !== p.last);
-      if (!pool.length) pool = DECK.filter(c => c.id !== p.last);
-      p.card = pool[randInt(pool.length)].id; break;
+      if (pool.length < 3) pool = DECK.filter(c => c.id !== p.last);
+      if (kind === "deal") { if (!p.deal) p.deal = shuffle(pool).slice(0, 3).map(c => c.id); else dirty.clear(); break; }
+      p.card = pool[randInt(pool.length)].id; p.deal = null; break;
     }
     case "done":
       if (p.card == null) return fail("no_card", "먼저 카드를 뽑아주세요.", 409);
@@ -215,7 +235,8 @@ async function act(body, st, id, kind, room) {
       if (p.done.filter(x => x.img).length >= IMG_PER_PERSON && !item.img) return fail("limit", "사진은 더 올릴 수 없어요.", 429);
       let bytes;
       try { bytes = Uint8Array.from(atob(String(body.data || "")), c => c.charCodeAt(0)); } catch (e) { return fail("img", "사진을 읽지 못했어요."); }
-      if (bytes.length < 100 || bytes.length > IMG_MAX || bytes[0] !== 0xff || bytes[1] !== 0xd8) return fail("img", "사진이 너무 크거나 형식이 맞지 않아요.");
+      const jpg = bytes[0] === 0xff && bytes[1] === 0xd8, png = bytes[0] === 0x89 && bytes[1] === 0x50;
+      if (bytes.length < 100 || bytes.length > (kakao ? IMG_MAX_K : IMG_MAX) || !(jpg || (kakao && png))) return fail("img", "사진이 너무 크거나 형식이 맞지 않아요.");
       if (item.img) await st.delete("img:" + item.img);
       item.img = newId(16);
       await st.put("img:" + item.img, bytes); break;
@@ -283,7 +304,9 @@ async function act(body, st, id, kind, room) {
     default: return fail("not_found", "없는 기능이에요.", 404);
   }
   for (const k of dirty) await savePerson(st, k, people[k]);
-  return json(myState(room, i, people, now));
+  const s = myState(room, i, people, now);
+  if (kakao) Object.assign(s, { title: room.title, reveal: room.reveal, names: room.names, code: room.code, pub: await publicView(st, room, now) });
+  return json(s);
 }
 
 /* ---------- Durable Object ---------- */
@@ -317,13 +340,45 @@ export class Room {
     const room = await this.room(id);
     if (!room) return NO_ROOM();
     if (!kind) return json(await publicView(st, room, Date.now()));
+    const kakao = req.headers.get("x-kakao") === "1"; // 워커 내부 호출만 이 헤더를 붙인다 (바깥 요청은 헤더를 넘기지 않음)
+    if (kakao && kind === "kpeek") { // 참가 전: 이름 목록·내가 이미 고른 이름
+      const people = await loadAll(st, room);
+      return json({ ...(await publicView(st, room, Date.now())), code: room.code, mine: people.findIndex(p => p.kid && p.kid === body?.kid) });
+    }
+    if (kakao && kind === "kclaim") {
+      const i = Number(body?.who);
+      if (!body?.kid || !Number.isInteger(i) || i < 0 || i >= room.names.length) return fail("who", "이름을 다시 골라주세요.");
+      const people = await loadAll(st, room), had = people.findIndex(p => p.kid === body.kid);
+      if (had >= 0 && had !== i) return fail("already", `이미 '${room.names[had]}'(으)로 참가했어요.`, 409);
+      const p = people[i];
+      if (p.kid !== body.kid) {
+        if (p.kid || p.pin) return fail("taken", "이 이름은 이미 다른 사람이 골랐어요. 본인 이름이 맞다면 단톡방에 알려주세요.", 409);
+        p.kid = body.kid; await savePerson(st, i, p);
+      }
+      return json({ ok: true });
+    }
     if (kind === "img") {
       if (Date.now() < room.reveal) return fail("hidden", "사진은 공개 시간에 볼 수 있어요.", 403);
       const bytes = await st.get("img:" + key);
       if (!bytes) return fail("no_img", "사진이 없어요.", 404);
-      return new Response(bytes, { headers: { "Content-Type": "image/jpeg", "Cache-Control": "public, max-age=86400", ...cors } });
+      return new Response(bytes, { headers: { "Content-Type": bytes[0] === 0x89 ? "image/png" : "image/jpeg", "Cache-Control": "public, max-age=86400", ...cors } });
     }
-    return act(body, st, id, kind, room);
+    if (kakao && !["deal", ...KINDS.split("|")].includes(kind)) return fail("not_found", "없는 기능이에요.", 404);
+    return act(body, st, id, kind, room, kakao);
+  }
+  async alarm() { await this.ctx.storage.deleteAll(); }
+}
+
+// 작은 저장 칸: 카톡 사용자별 진행 상황(u:<해시>), 참가 코드 → 방(c:<코드>)
+export class Box {
+  constructor(ctx) { this.ctx = ctx; }
+  async fetch(req) {
+    const st = this.ctx.storage;
+    if (req.method === "GET") return json((await st.get("v")) ?? null);
+    const { v, ifEmpty } = await req.json();
+    if (ifEmpty && (await st.get("v")) != null) return json({ ok: false }, 409);
+    await st.put("v", v); await st.setAlarm(Date.now() + TTL * 1000);
+    return json({ ok: true });
   }
   async alarm() { await this.ctx.storage.deleteAll(); }
 }
@@ -345,6 +400,10 @@ export default {
           if (r.status !== 409) { const j = await r.json(); return r.ok ? json({ id }) : json(j, r.status); }
         }
         return fail("server", "잠시 뒤 다시 해주세요.", 500);
+      }
+      if (url.pathname === "/kakao/skill" && req.method === "POST") {
+        if (!env.BOX) return fail("not_found", "없는 주소예요.", 404);
+        return await kakaoSkill(req, env, { stub, newId, sha, DECK, C: { NOTE_MAX, ASK_MAX, QUIZ_N, GUESS_PTS, QUIZ_PTS, IMG_MAX_K } });
       }
       const im = url.pathname.match(IMG_ROUTE);
       if (im && req.method === "GET") return await stub(env, im[1]).fetch(`https://room/${im[1]}/img/${im[2]}`);

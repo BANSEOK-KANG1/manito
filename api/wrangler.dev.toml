@@ -3,6 +3,10 @@ name = "manito-dev"
 main = "src/index.js"
 compatibility_date = "2026-10-01"
 
+# 시험 서버라서 공개 시간을 1분 뒤로도 잡을 수 있게 (운영은 기본 10분)
+[vars]
+MIN_REVEAL_MIN = "1"
+
 [assets]
 directory = "./public-dev"
 binding = "ASSETS"
@@ -18,3 +22,11 @@ class_name = "Room"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+[[durable_objects.bindings]]
+name = "BOX"
+class_name = "Box"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Box"]
