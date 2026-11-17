@@ -21,7 +21,8 @@ const norm = s => String(s || "").replace(/[^\p{L}\p{N}]/gu, "");
 const CODE_CHARS = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
 /* ---------- 응답 만들기 ---------- */
-const MENU = [["🏠 홈", "홈"], ["🃏 미션", "미션"], ["💌 쪽지", "쪽지"], ["❓ 질문", "질문"], ["🧩 퀴즈", "퀴즈"], ["🔍 힌트", "힌트"], ["🎯 맞히기", "맞히기"], ["📊 점수", "점수"], ["📢 단톡 공지", "공지"]];
+// 찬스(질문·힌트·거짓말·맞히기)는 '🍀 찬스' 하나로 묶었다
+const MENU = [["🏠 홈", "홈"], ["🃏 미션", "미션"], ["💌 쪽지", "쪽지"], ["🍀 찬스", "찬스"], ["🧩 퀴즈", "퀴즈"], ["🎯 맞히기", "맞히기"], ["📊 점수", "점수"], ["📢 단톡 공지", "공지"]];
 function reply(outputs, qrs = MENU) {
   const o = [].concat(outputs).filter(Boolean).slice(0, 3).map(x => typeof x === "string" ? { simpleText: { text: x.slice(0, 1000) } } : x);
   const q = qrs.filter(Boolean).slice(0, 10).map(x => { const [label, msg] = typeof x === "string" ? [x, x] : x; return { label: [...label].slice(0, 14).join(""), action: "message", messageText: msg }; });
@@ -97,6 +98,7 @@ const CMD = {
   참가: askCode, 참가코드: askCode,
   미션: mission, 카드뽑기: mission, 미션완료: missionDone, 패스: missionPass, 사진건너뛰기: skipPhoto,
   쪽지: notes, 쪽지쓰기: startNote,
+  찬스: chances, 찬스보기: chances,
   질문: asks, 질문하기: startAsk,
   퀴즈: quiz, 퀴즈내기: startQuiz,
   힌트: hints, 맞히기: guessMenu, 점수: points,
@@ -126,7 +128,7 @@ function intro() {
 }
 function help(c) {
   return reply([
-    "❔ 이렇게 놀아요\n\n🃏 미션: 카드 3장 중 하나를 고르면 미션이 나와요. ★ 개수만큼 점수를 받아요. (하루 3개, 패스 1번)\n💌 쪽지: 내가 챙기는 사람에게 이름 없이 쪽지를 보내요. (하루 3개)\n❓ 질문: 나를 챙겨주는 사람에게 예/아니오 질문을 해요. (하루 2개) 상대는 게임 중 딱 한 번 거짓말을 할 수 있어요.\n🧩 퀴즈: 나에 대한 퀴즈 3문제를 내요. 내가 챙기는 사람의 퀴즈를 맞히면 문제당 +2점이에요.\n🔍 힌트: 모은 점수로 '나를 챙겨주는 사람' 힌트를 사요.\n🎯 맞히기: 공개 전까지 내 마니또를 찍어두면, 맞혔을 때 +3점이에요.\n\n공개 시간이 되면 '결과'에서 전체 짝, 순위, 미션 사진 앨범을 볼 수 있어요.",
+    "❔ 이렇게 놀아요\n\n🎁 챙겨주기 (점수 모으기)\n🃏 미션: 카드 3장 중 하나를 고르면 미션이 나와요. ★ 개수만큼 점수. (하루 3개, 패스 1번)\n💌 쪽지: 내가 챙기는 사람에게 이름 없이 쪽지. (하루 3개)\n🧩 퀴즈: 나에 대한 퀴즈를 1~3문제 내요. 내가 챙기는 사람의 퀴즈를 맞히면 문제당 +2점.\n\n🍀 찬스 (나를 챙겨주는 사람 알아내기)\n❓ 질문 찬스: 예/아니오 질문, 하루 2번 무료\n🔍 힌트 찬스: 점수로 사요. 글자 수 1점 · 후보 지우기 2점 · 초성 3점\n🤥 거짓말 찬스: 내가 답할 때 딱 1번 거짓말 가능 (공개 때 들통나요)\n🎯 맞히기: 공개 전까지 찍어두고, 맞히면 +3점\n\n공개 시간이 되면 '결과'에서 전체 짝, 순위, 미션 사진 앨범을 볼 수 있어요.",
   ], c.ses?.who != null ? withMenu() : [["🎁 방 만들기", "방 만들기"], ["🔑 참가 코드 입력", "참가"]]);
 }
 function cancel(c) { c.ses.mode = null; return c.ses.room ? home(c) : intro(); }
@@ -220,7 +222,7 @@ async function confirmName(c) {
   const s = o.s;
   return reply([
     `🤫 쉿! ${s.me}님이 몰래 챙겨줄 사람은...\n\n🎁 ${s.target} 🎁\n\n들키지 않게 잘 챙겨주세요. 공개는 ${fmt(s.reveal)}이에요.`,
-    "먼저 '🃏 미션'에서 카드를 뽑아보세요!\n'🧩 퀴즈'에서 나에 대한 퀴즈를 내두면, 나를 챙기는 사람이 풀 수 있어요.",
+    "먼저 '🃏 미션'에서 카드를 뽑아보세요!\n누가 나를 챙기는지 궁금하면 '🍀 찬스'에서 질문하거나 힌트를 받아요.",
   ], withMenu([["🃏 미션", "미션"], ["🧩 퀴즈", "퀴즈"]]));
 }
 
@@ -259,18 +261,16 @@ async function modeInput(c) {
       return reply(`❓ 질문을 보냈어요: "${r.s.myAsks.at(-1).q}"\n나를 챙겨주는 사람이 답하면 '❓ 질문'에서 볼 수 있어요.\n오늘 남은 질문: ${r.s.left.asks}개`, withMenu());
     }
     case "quiz": {
+      if (norm(u) === "여기까지내기" && md.qs.length) return saveQuiz(c, md.qs);
       const parts = u.split(/\s*[\/\n]\s*/).map(s => s.trim()).filter(Boolean);
       if (parts.length !== 4) return reply(`형식이 달라요. '질문 / 정답 / 오답 / 오답' 4칸을 / 로 나눠 보내주세요.\n예) 내가 좋아하는 계절은? / 겨울 / 여름 / 봄`, [["취소", "취소"]]);
       if (new Set(parts.slice(1)).size !== 3) return reply("정답과 오답이 같아요. 서로 다르게 써주세요.", [["취소", "취소"]]);
       const qs = [...md.qs, parts];
       if (qs.length < c.X.C.QUIZ_N) {
         c.ses.mode = { m: "quiz", qs };
-        return reply(`✅ ${qs.length}번 문제 저장!\n이제 ${qs.length + 1}번 문제를 보내주세요.\n(질문 / 정답 / 오답 / 오답)`, [["취소", "취소"]]);
+        return reply(`✅ ${qs.length}번 문제 저장!\n${qs.length + 1}번 문제를 보내거나, 여기까지만 내도 돼요.\n(질문 / 정답 / 오답 / 오답)`, [["✅ 여기까지 내기", "여기까지 내기"], ["취소", "취소"]]);
       }
-      const r = await call(c, "quiz", { quiz: qs.map(([q, a, w1, w2]) => ({ q, a, w: [w1, w2] })) });
-      c.ses.mode = null;
-      if (r.err) return reply(r.err, withMenu());
-      return reply("🧩 퀴즈 3문제를 냈어요! 나를 챙겨주는 사람이 풀면 몇 개 맞혔는지 알려드릴게요.\n보기 순서는 섞여서 나가요.", withMenu());
+      return saveQuiz(c, qs);
     }
     case "photo": {
       const url = findImage(c.ur);
@@ -291,6 +291,12 @@ async function modeInput(c) {
   }
   c.ses.mode = null;
   return home(c);
+}
+async function saveQuiz(c, qs) {
+  const r = await call(c, "quiz", { quiz: qs.map(([q, a, w1, w2]) => ({ q, a, w: [w1, w2] })) });
+  c.ses.mode = null;
+  if (r.err) return reply(r.err, withMenu());
+  return reply(`🧩 퀴즈 ${qs.length}문제를 냈어요! 나를 챙겨주는 사람이 풀면 몇 개 맞혔는지 알려드릴게요.\n보기 순서는 섞여서 나가요.`, withMenu());
 }
 function findImage(ur) {
   const urls = JSON.stringify(ur).match(/https?:\/\/[^"\s\\]+/g) || [];
@@ -437,7 +443,7 @@ async function answerAsk(c, k, ans, lie) {
   if (!c.ses.room || c.ses.who == null) return home(c);
   const r = await call(c, "answer", { k, ans, lie });
   if (r.err) return reply(r.err, withMenu([["❓ 질문", "질문"]]));
-  return reply(`✅ "${ans}"(이)라고 답했어요.${lie ? " 🤥 거짓말 찬스를 썼어요!" : ""}`, withMenu([["❓ 질문", "질문"]]));
+  return reply(`✅ "${ans}"(이)라고 답했어요.${lie ? " 🤥 거짓말 찬스를 썼어요!" : ""}`, withMenu([["❓ 질문", "질문"], ["🍀 찬스", "찬스"]]));
 }
 
 /* ---------- 퀴즈 ---------- */
@@ -447,8 +453,8 @@ async function quiz(c) {
   if (res) return res;
   if (s.over) return result(c, s);
   const parts = [], qr = [];
-  if (!s.myQuiz) { parts.push("📝 내 퀴즈: 아직 안 냈어요.\n나에 대한 문제 3개를 내면, 나를 챙겨주는 사람이 풀어요."); qr.push(["📝 퀴즈 내기", "퀴즈 내기"]); }
-  else parts.push(`📝 내 퀴즈: ${s.myQuizSolved.n}/3 풀림 · ${s.myQuizSolved.right}개 맞힘` + (s.quizLocked ? "" : "\n(아직 아무도 안 풀어서 다시 낼 수 있어요)"));
+  if (!s.myQuiz) { parts.push("📝 내 퀴즈: 아직 안 냈어요.\n나에 대한 문제를 1~3개 내면, 나를 챙겨주는 사람이 풀어요."); qr.push(["📝 퀴즈 내기", "퀴즈 내기"]); }
+  else parts.push(`📝 내 퀴즈: ${s.myQuizSolved.n}/${s.myQuizSolved.total} 풀림 · ${s.myQuizSolved.right}개 맞힘` + (s.quizLocked ? "" : "\n(아직 아무도 안 풀어서 다시 낼 수 있어요)"));
   if (!s.myQuiz || !s.quizLocked) { if (s.myQuiz) qr.push(["📝 다시 내기", "퀴즈 내기"]); }
   if (!s.tQuiz) parts.push(`\n🧩 ${s.target}님은 아직 퀴즈를 안 냈어요.`);
   else {
@@ -469,7 +475,7 @@ async function startQuiz(c) {
   if (s.over) return result(c, s);
   if (s.quizLocked) return reply("내 마니또가 이미 풀기 시작해서 바꿀 수 없어요.", withMenu());
   c.ses.mode = { m: "quiz", qs: [] };
-  return reply("📝 나에 대한 퀴즈 3문제를 내요.\n한 문제씩 '질문 / 정답 / 오답 / 오답' 형식으로 보내주세요.\n\n예) 내가 좋아하는 계절은? / 겨울 / 여름 / 봄\n\n1번 문제를 보내주세요.", [["취소", "취소"]]);
+  return reply("📝 나에 대한 퀴즈를 1~3문제 내요.\n한 문제씩 '질문 / 정답 / 오답 / 오답' 형식으로 보내주세요.\n\n예) 내가 좋아하는 계절은? / 겨울 / 여름 / 봄\n\n1번 문제를 보내주세요.", [["취소", "취소"]]);
 }
 async function solveQuiz(c, k, j) {
   if (!c.ses.room || c.ses.who == null) return home(c);
@@ -478,6 +484,31 @@ async function solveQuiz(c, k, j) {
   const q = r.s.tQuiz[k], ok = q.mine === q.ans;
   const next = r.s.tQuiz.some(x => x.mine == null);
   return reply(`${ok ? "⭕ 정답! +2점" : `❌ 아쉬워요. 정답은 '${q.opts[q.ans]}'`}\n쓸 수 있는 점수: ${r.s.points.balance}점`, withMenu(next ? [["🧩 다음 문제", "퀴즈"]] : []));
+}
+
+/* ---------- 찬스: 나를 챙겨주는 사람을 가볍게 알아내는 방법 모음 ---------- */
+async function chances(c) {
+  const { s, res } = await state(c);
+  if (res) return res;
+  if (s.over) return result(c, s);
+  const p = s.prices, bal = s.points.balance, qr = [];
+  const waiting = s.myAsks.filter(a => !a.ans).length, toAnswer = s.tAsks.filter(a => !a.ans).length;
+  const hintLine = [p.len != null && `글자 수 ${p.len}점`, p.elim != null && `후보 지우기 ${p.elim}점`, p.cho != null && `초성 ${p.cho}점`].filter(Boolean).join(" · ");
+  const last = s.hints.at(-1);
+  const t = [
+    "🍀 찬스 — 나를 챙겨주는 사람은 누구?",
+    `\n❓ 질문 찬스: 오늘 ${s.left.asks}번 남음 (무료, 예/아니오)` + (waiting ? `\n   답 기다리는 질문 ${waiting}개` : ""),
+    `🔍 힌트 찬스: ${hintLine || "다 샀어요"}\n   ⭐ 내 점수 ${bal}점` + (last ? `\n   최근 힌트: ${last.text}` : ""),
+    `🤥 거짓말 찬스: ${s.lieLeft ? "1번 남음" : "썼어요"} (내가 답할 때)` + (toAnswer ? `\n   ${s.target}님이 보낸 질문 ${toAnswer}개에 답해주세요` : ""),
+    `🎯 맞히기: ${s.guess ? `지금 '${s.guess}'님 찍음` : "아직 안 찍음"} (맞히면 +${c.X.C.GUESS_PTS}점)`,
+  ].join("\n");
+  if (s.left.asks > 0) qr.push(["❓ 질문하기", "질문하기"]);
+  if (toAnswer || s.myAsks.length) qr.push(["🗨️ 질문·답 보기", "질문"]);
+  if (p.len != null && bal >= p.len) qr.push([`🔤 글자 수 ${p.len}점`, "힌트 글자수"]);
+  if (p.elim != null && bal >= p.elim) qr.push([`🙅 지우기 ${p.elim}점`, "힌트 지우기"]);
+  if (p.cho != null && bal >= p.cho) qr.push([`🔍 초성 ${p.cho}점`, "힌트 초성"]);
+  qr.push(["🎯 맞히기", "맞히기"]);
+  return reply(t, withMenu(qr));
 }
 
 /* ---------- 힌트 ---------- */
@@ -491,13 +522,13 @@ async function hints(c) {
   if (p.len != null) { shop.push(`· 이름 글자 수: ${p.len}점`); qr.push([`글자 수 ${p.len}점`, "힌트 글자수"]); }
   if (p.elim != null) { shop.push(`· 후보 한 명 지우기: ${p.elim}점`); qr.push([`후보 지우기 ${p.elim}점`, "힌트 지우기"]); }
   if (p.cho != null) { shop.push(`· 이름 한 글자 초성: ${p.cho}점`); qr.push([`초성 ${p.cho}점`, "힌트 초성"]); }
-  return reply(`🔍 힌트 상점 — 나를 챙겨주는 사람은 누구?\n⭐ 쓸 수 있는 점수: ${s.points.balance}점\n\n${shop.join("\n") || "살 수 있는 힌트를 다 샀어요."}\n\n📜 내 힌트\n${own || "아직 없어요."}\n\n※ 힌트에 쓴 점수는 최종 점수에서 빠져요.`, withMenu(qr));
+  return reply(`🔍 힌트 찬스 — 나를 챙겨주는 사람은 누구?\n⭐ 쓸 수 있는 점수: ${s.points.balance}점\n\n${shop.join("\n") || "살 수 있는 힌트를 다 샀어요."}\n\n📜 내 힌트\n${own || "아직 없어요."}\n\n※ 힌트에 쓴 점수는 최종 점수에서 빠져요.`, withMenu(qr));
 }
 async function buyHint(c, type) {
   if (!c.ses.room || c.ses.who == null) return home(c);
   const r = await call(c, "hint", { type });
-  if (r.err) return reply(r.err, withMenu([["🔍 힌트", "힌트"]]));
-  return reply(`🔍 ${r.s.hints.at(-1).text}\n\n남은 점수: ${r.s.points.balance}점`, withMenu([["🎯 맞히기", "맞히기"], ["🔍 힌트", "힌트"]]));
+  if (r.err) return reply(r.err, withMenu([["🍀 찬스", "찬스"]]));
+  return reply(`🔍 ${r.s.hints.at(-1).text}\n\n남은 점수: ${r.s.points.balance}점`, withMenu([["🎯 맞히기", "맞히기"], ["🍀 찬스", "찬스"]]));
 }
 
 /* ---------- 맞히기 ---------- */

@@ -80,15 +80,17 @@ expect(await say(T, "질문"), /우리 같은 학교야\? → "예"/, "T가 답 
 await say(A, "퀴즈 내기");
 expect(await say(A, "좋아하는 계절? / 겨울"), /형식이 달라요/, "퀴즈 형식 오류");
 await say(A, "좋아하는 계절? / 겨울 / 여름 / 봄");
-await say(A, "MBTI는? / INFP / ESTJ / ENTP");
-expect(await say(A, "좋아하는 음식? / 떡볶이 / 피자 / 초밥"), /3문제를 냈어요/, "퀴즈 3개 완료");
+expect(await say(A, "MBTI는? / INFP / ESTJ / ENTP"), /여기까지만/, "2번 저장 + 여기까지 내기 안내");
+expect(await say(A, "여기까지 내기"), /2문제를 냈어요/, "퀴즈 2개만 내기");
+expect(await say(A, "퀴즈"), /0\/2 풀림/, "내 퀴즈 0/2");
 r = expect(await say(G, "퀴즈"), /Q1\./, "G가 A 퀴즈 보기");
 expect(await say(G, r.qrs.find(q => q.startsWith("퀴즈답"))), /⭕ 정답|❌ 아쉬워요/, "G 퀴즈 풀기");
 expect(await say(A, "퀴즈 내기"), /바꿀 수 없어요/, "풀기 시작 후 수정 막힘");
 
 // 힌트·맞히기
 await say(G, "미션"); await say(G, "1번 카드"); await say(G, "미션 완료"); await say(G, "사진 건너뛰기");
-r = expect(await say(A, "힌트"), /힌트 상점/, "힌트 상점");
+r = expect(await say(A, "찬스"), /질문 찬스[\s\S]*힌트 찬스[\s\S]*거짓말 찬스: 썼어요[\s\S]*맞히기/, "찬스 모아보기");
+r = expect(await say(A, "힌트"), /힌트 찬스/, "힌트 찬스");
 expect(await say(A, "힌트 초성"), /점수가 모자라요|초성은/, "초성 힌트(점수 따라)");
 expect(await say(A, "힌트 글자수"), /글자예요|점수가 모자라요/, "글자 수 힌트(점수 따라)");
 expect(await say(A, "맞히기"), /누구일까요/, "맞히기 화면");

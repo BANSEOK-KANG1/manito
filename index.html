@@ -133,6 +133,10 @@ details.card summary::-webkit-details-marker{display:none}
 .x{flex:none;width:38px;height:38px;padding:0;border:0;background:transparent;color:var(--muted);font-size:18px;border-radius:10px}
 .x[disabled]{opacity:.3}
 .add{border-style:dashed;background:transparent;color:var(--muted)}
+.chances{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.chances li{display:flex;gap:10px;align-items:flex-start;background:var(--sunk);border-radius:12px;padding:10px 12px;font-size:14px}
+.chances b{display:block}
+.chances small{display:block;color:var(--muted);font-size:12px;overflow-wrap:anywhere}
 .who-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .who{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;border:1px solid var(--line);background:var(--sunk);text-align:left;font-weight:500}
 .who i{flex:none;font-style:normal;width:34px;height:34px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-family:var(--display);font-size:15px}
@@ -377,7 +381,7 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
 
     <nav class="tabs" role="tablist" id="tabs">
       <button role="tab" type="button" data-tab="give" aria-selected="true">챙겨주기<span class="dot" id="dotGive" hidden></span></button>
-      <button role="tab" type="button" data-tab="find" aria-selected="false">추리하기<span class="dot" id="dotFind" hidden></span></button>
+      <button role="tab" type="button" data-tab="find" aria-selected="false">🍀 찬스<span class="dot" id="dotFind" hidden></span></button>
       <button role="tab" type="button" data-tab="quiz" aria-selected="false">내 퀴즈<span class="dot" id="dotQuiz" hidden></span></button>
     </nav>
 
@@ -435,34 +439,39 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
       </section>
     </div>
 
-    <!-- 추리하기 -->
+    <!-- 찬스: 나를 챙겨주는 사람을 가볍게 알아내기 -->
     <div class="stack" data-panel="find" hidden>
       <section class="card">
-        <h2>받은 쪽지</h2>
-        <div class="cheer"><b id="cheer">0</b><span>내 마니또가 나를 위해 완료한 미션 수</span></div>
-        <div class="notes" id="inbox"></div>
+        <h2>찬스 — 나를 챙겨주는 사람은 누구?</h2>
+        <ul class="chances" id="chanceSum"></ul>
       </section>
 
       <section class="card">
-        <h2>스무고개</h2>
-        <p class="small muted">내 마니또에게 예/아니오 질문을 보내요. 하루 2개. 한 번은 거짓말일 수도 있어요.</p>
+        <h2>❓ 질문 찬스</h2>
+        <p class="small muted">내 마니또에게 예/아니오 질문을 보내요. 하루 2번, 무료. 상대가 거짓말 찬스를 쓸 수도 있어요.</p>
         <div class="row"><input id="askText" maxlength="40" placeholder="예) 안경 썼어?" autocomplete="off"><button id="askGo" type="button" style="flex:none">보내기</button></div>
         <p class="err" id="askErr" hidden></p>
         <div class="asks" id="myAsks"></div>
       </section>
 
       <section class="card">
-        <div class="card-head"><h2>힌트 상점</h2><span class="badge ok" id="shopBal"></span></div>
+        <div class="card-head"><h2>🔍 힌트 찬스</h2><span class="badge ok" id="shopBal"></span></div>
         <div class="shop" id="shop"></div>
         <p class="err" id="hErr" hidden></p>
         <div class="notes" id="hints"></div>
       </section>
 
       <section class="card">
-        <h2>나를 챙겨주는 사람은 누구일까?</h2>
+        <h2>🎯 맞히기</h2>
         <p class="small muted">공개 전까지 몇 번이든 바꿀 수 있어요. 맞히면 <b>+3점</b>!</p>
         <div class="who-grid" id="guessGrid"></div>
         <p class="err" id="gErr" hidden></p>
+      </section>
+
+      <section class="card">
+        <h2>💌 받은 쪽지</h2>
+        <div class="cheer"><b id="cheer">0</b><span>내 마니또가 나를 위해 완료한 미션 수</span></div>
+        <div class="notes" id="inbox"></div>
       </section>
     </div>
 
@@ -471,7 +480,7 @@ ol.board li.me{background:var(--seal-soft);margin:0 -10px;padding:10px;border-ra
       <section class="card" id="quizStatus" hidden></section>
       <section class="card" id="quizForm">
         <h2>나에 대한 퀴즈 내기</h2>
-        <p class="small muted">내 마니또가 풀어요. 맞히면 마니또가 점수를 얻으니, 알아낼 수 있을 만한 문제를 내주세요. 마니또가 풀기 시작하면 바꿀 수 없어요.</p>
+        <p class="small muted">1~3문제만 내면 돼요. 내 마니또가 풀어요. 맞히면 마니또가 점수를 얻으니, 알아낼 수 있을 만한 문제를 내주세요. 마니또가 풀기 시작하면 바꿀 수 없어요.</p>
         <div class="sugs" id="sugs"></div>
         <div id="qFields"></div>
         <p class="err" id="qErr" hidden></p>
@@ -707,12 +716,20 @@ function renderMine(initial){
   $("sendNote").disabled=r.left.notes<=0;
   $("sendNote").textContent=r.left.notes>0?`익명으로 보내기 (오늘 ${r.left.notes}번 남음)`:"오늘 쪽지는 다 보냈어요";
 
-  /* 추리하기 */
+  /* 찬스 */
+  const pr=r.prices,hl=[pr.len!=null&&`글자 수 ${pr.len}점`,pr.elim!=null&&`후보 지우기 ${pr.elim}점`,pr.cho!=null&&`초성 ${pr.cho}점`].filter(Boolean).join(" · ");
+  const toAns=r.tAsks.filter(a=>!a.ans).length;
+  $("chanceSum").innerHTML=[
+    ["❓","질문 찬스",`오늘 ${Math.max(0,r.left.asks)}번 남음 · 무료`],
+    ["🔍","힌트 찬스",`${hl||"다 샀어요"} · 내 점수 ${P.balance}점`],
+    ["🤥","거짓말 찬스",`${r.lieLeft?"1번 남음":"썼어요"} · 내가 답할 때${toAns?` · 답할 질문 ${toAns}개 (챙겨주기 탭)`:""}`],
+    ["🎯","맞히기",r.guess?`지금 ${esc(r.guess)}님 찍음 · 맞히면 +3점`:"아직 안 찍음 · 맞히면 +3점"],
+  ].map(([ic,n,d])=>`<li><span aria-hidden="true">${ic}</span><span><b>${n}</b><small>${d}</small></span></li>`).join("");
   $("cheer").textContent=r.cheer;
   $("inbox").innerHTML=r.inbox.length?r.inbox.map(n=>`<div class="note">${esc(n.text)}<time>${fmtShort.format(new Date(n.at))}</time></div>`).join(""):`<p class="empty">아직 받은 쪽지가 없어요</p>`;
   $("askGo").disabled=r.left.asks<=0;$("askGo").textContent=r.left.asks>0?`보내기 (${r.left.asks})`:"내일 또";
   $("myAsks").innerHTML=r.myAsks.slice().reverse().map(a=>`<div class="ask"><div class="top"><span class="q">${esc(a.q)}</span><span class="a${a.ans?"":" wait"}${a.lie?" lie":""}">${a.ans?a.ans+(a.lie?" (거짓말이었어요!)":""):"답 기다리는 중"}</span></div></div>`).join("");
-  const SHOP=[["len","🔤","이름 글자 수","내 마니또 이름이 몇 글자인지"],["elim","🙅","이 사람은 아니에요","후보 한 명을 지워줘요 · 살 때마다 1점씩 올라요"],["cho","🔍","이름 초성 하나","이름 글자 하나의 초성을 알려줘요 · 살 때마다 1점씩 올라요"]];
+  const SHOP=[["len","🔤","이름 글자 수","내 마니또 이름이 몇 글자인지"],["elim","🙅","이 사람은 아니에요","후보 한 명을 지워줘요"],["cho","🔍","이름 초성 하나","이름 글자 하나의 초성을 알려줘요"]];
   $("shopBal").textContent=`쓸 수 있는 점수 ${P.balance}`;
   $("shop").innerHTML=SHOP.map(([t,ic,name,desc])=>{const pr=r.prices[t];
     return `<div class="item"><span class="ic" aria-hidden="true">${ic}</span><span class="tx">${name}<small>${desc}</small></span><button type="button" data-t="${t}" data-p="${pr??""}"${pr==null||P.balance<pr?" disabled":""}>${pr==null?"다 샀어요":pr+"점"}</button></div>`;}).join("");
@@ -730,7 +747,7 @@ function renderMine(initial){
   if(r.myQuiz){
     const s=r.myQuizSolved;
     qs.hidden=false;
-    qs.innerHTML=`<div class="card-head"><h2>내가 낸 퀴즈</h2><span class="badge${s.n?" ok":""}">${s.n?`${s.n}/3 풀림 · ${s.right}개 정답`:"아직 안 풀었어요"}</span></div>`+
+    qs.innerHTML=`<div class="card-head"><h2>내가 낸 퀴즈</h2><span class="badge${s.n?" ok":""}">${s.n?`${s.n}/${s.total||r.myQuiz.length} 풀림 · ${s.right}개 정답`:"아직 안 풀었어요"}</span></div>`+
       r.myQuiz.map((q,k)=>`<div class="qitem"><span class="q">Q${k+1}. ${esc(q.q)}</span><div class="opts">${q.opts.map((o,c)=>`<button type="button" disabled class="${c===q.ans?"right":""}">${esc(o)}</button>`).join("")}</div></div>`).join("")+
       (r.quizLocked?`<p class="muted small">내 마니또가 풀기 시작해서 이제 바꿀 수 없어요.</p>`:`<p class="muted small">아직 아무도 안 풀었어요. 아래에서 고칠 수 있어요.</p>`);
   }else qs.hidden=true;
@@ -747,9 +764,11 @@ function buildQuizForm(){
 }
 $("qSave").onclick=()=>{
   const quiz=[0,1,2].map(k=>({q:$("q"+k).value.trim(),a:$("a"+k).value.trim(),w:[$("w"+k+"0").value.trim(),$("w"+k+"1").value.trim()]}));
-  if(quiz.some(x=>!x.q||!x.a||!x.w[0]||!x.w[1]))return err("qErr","문제 3개 모두 질문, 정답, 오답 2개를 채워주세요.");
-  if(quiz.some(x=>new Set([x.a,...x.w]).size!==3))return err("qErr","정답과 오답이 같은 문제가 있어요.");
-  doAct("quiz",{quiz},"qErr",()=>{toast("퀴즈를 저장했어요");buildQuizForm();});
+  const filled=quiz.filter(x=>x.q||x.a||x.w[0]||x.w[1]);
+  if(!filled.length)return err("qErr","문제를 하나 이상 써주세요.");
+  if(filled.some(x=>!x.q||!x.a||!x.w[0]||!x.w[1]))return err("qErr","쓰기 시작한 문제는 질문, 정답, 오답 2개를 모두 채워주세요.");
+  if(filled.some(x=>new Set([x.a,...x.w]).size!==3))return err("qErr","정답과 오답이 같은 문제가 있어요.");
+  doAct("quiz",{quiz:filled},"qErr",()=>{toast("퀴즈를 저장했어요");buildQuizForm();});
 };
 
 function compress(file){

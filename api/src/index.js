@@ -75,8 +75,8 @@ function hintPrices(room, i, p) {
   const cands = room.names.filter((n, k) => k !== i && !p.elim.includes(n));
   return {
     len: p.hints.some(h => h.t === "len") ? null : 1,
-    elim: cands.length > 2 ? 2 + p.elim.length : null,
-    cho: p.chos.length < [...giver].length ? 3 + p.chos.length : null,
+    elim: cands.length > 2 ? 2 : null, // 가격은 고정 (찬스를 가볍게)
+    cho: p.chos.length < [...giver].length ? 3 : null,
   };
 }
 
@@ -140,7 +140,7 @@ function myState(room, i, people, now) {
     points: { mission: missionPts(p), quiz: quizPts(p, tp).pts, spent: p.spent, balance: bal },
     // 내 퀴즈
     myQuiz: p.quiz ? p.quiz.map(q => ({ q: q.q, opts: q.opts, ans: q.ans })) : null,
-    myQuizSolved: p.quiz ? (() => { let n = 0, r = 0; p.quiz.forEach((q, k) => { if (gp.quizAns[k] != null) { n++; if (gp.quizAns[k] === q.ans) r++; } }); return { n, right: r }; })() : null,
+    myQuizSolved: p.quiz ? (() => { let n = 0, r = 0; p.quiz.forEach((q, k) => { if (gp.quizAns[k] != null) { n++; if (gp.quizAns[k] === q.ans) r++; } }); return { n, right: r, total: p.quiz.length }; })() : null,
     quizLocked: !!(p.quiz && Object.keys(gp.quizAns).length),
   };
 }
@@ -256,7 +256,7 @@ async function act(body, st, id, kind, room, kakao = false) {
       const g = people[giverOf(room, i)];
       if (p.quiz && Object.keys(g.quizAns).length) return fail("locked", "내 마니또가 이미 풀기 시작해서 바꿀 수 없어요.", 409);
       const qs = (body.quiz || []).slice(0, QUIZ_N).map(q => ({ q: clean(q.q, 60), a: clean(q.a, 30), w: (q.w || []).map(x => clean(x, 30)).filter(Boolean).slice(0, 2) }));
-      if (qs.length !== QUIZ_N || qs.some(q => !q.q || !q.a || q.w.length !== 2)) return fail("quiz", `문제 ${QUIZ_N}개 모두 질문·정답·오답 2개를 채워주세요.`);
+      if (!qs.length || qs.some(q => !q.q || !q.a || q.w.length !== 2)) return fail("quiz", `문제는 1~${QUIZ_N}개, 문제마다 질문·정답·오답 2개를 채워주세요.`);
       if (qs.some(q => new Set([q.a, ...q.w]).size !== 3)) return fail("quiz", "정답과 오답이 같은 문제가 있어요.");
       p.quiz = qs.map(q => { const opts = shuffle([q.a, ...q.w]); return { q: q.q, opts, ans: opts.indexOf(q.a) }; });
       break;

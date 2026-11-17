@@ -13,3 +13,16 @@ class_name = "Room"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Room"]
+
+# 카톡 챗봇: 사용자별 진행 상황·참가 코드 저장
+[[durable_objects.bindings]]
+name = "BOX"
+class_name = "Box"
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["Box"]
+
+# 채널을 만들면 주소를 넣고 다시 배포 (단톡 공지에 나옴)
+# [vars]
+# CHANNEL_URL = "http://pf.kakao.com/_xxxxx"
