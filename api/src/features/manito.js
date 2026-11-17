@@ -78,7 +78,7 @@ export async function group(c) {
     return greply(`🎉 [${v.title}] 결과!\n\n👑 최고의 마니또: ${sc[0].name} (${sc[0].total}점)\n\n${v.result.map(([a, b]) => `${a} → ${b}`).join("\n")}\n\n🏆 순위\n${sc.map((x, k) => `${k + 1}. ${x.name} ${x.total}점${x.right ? " 🎯" : ""}`).join("\n")}\n\n📸 미션 사진 ${v.album.length}장은 채널 1:1의 '앨범'에서 볼 수 있어요.`, [], true);
   }
   if (/^결과/.test(sub)) return greply(`아직 공개 전이에요. ${fmt(v.reveal)} (${until(v.reveal, c.now)})`, [["🎁 마니또 현황", "마니또"]], true);
-  const joined = v.claimed.filter(Boolean).length, cheer = v.cheer.reduce((a, b) => a + b, 0);
+  const joined = v.claimed.filter(Boolean).length, cheer = v.cheerTotal;
   const waiting = v.names.filter((_, i) => !v.claimed[i]);
   return greply(`🎁 [${v.title}] 진행 현황\n\n참가: ${joined}/${v.names.length}명${waiting.length ? `\n아직 안 들어온 사람: ${waiting.join(", ")}` : ""}\n지금까지 완료한 미션: ${cheer}개\n공개: ${fmt(v.reveal)} (${until(v.reveal, c.now)})\n\n아직 참가 안 했다면 👇\n${joinGuide(c, v)}\n\n${DM}`, [["🔄 새로고침", "마니또"]], true);
 }
@@ -569,7 +569,7 @@ function joinGuide(c, s) {
 async function announce(c) {
   const { s, res } = await state(c);
   if (res) return res;
-  const pub = s.pub, joined = pub.claimed.filter(Boolean).length, cheer = pub.cheer.reduce((a, b) => a + b, 0);
+  const pub = s.pub, joined = pub.claimed.filter(Boolean).length, cheer = pub.cheerTotal;
   const msg = s.over
     ? null
     : `🎁 [${s.title}] 진행 중!\n\n참가: ${joined}/${s.names.length}명\n지금까지 완료한 미션: ${cheer}개\n공개: ${fmt(s.reveal)} (${until(s.reveal, c.now)})\n\n아직 참가 안 했다면 👇\n${joinGuide(c, s)}`;

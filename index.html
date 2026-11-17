@@ -610,7 +610,7 @@ function showPick(){
   head(over()?"결과 공개":"마니또 진행 중",`${room.title} · ${room.names.length}명`,"마");
   $("claimCount").textContent=`${room.claimed.filter(Boolean).length}/${room.names.length} 확인`;
   const order=room.names.map((n,i)=>({n,i})).sort((a,b)=>a.n.localeCompare(b.n,"ko"));
-  $("whoGrid").innerHTML=order.map(({n,i})=>`<button type="button" class="who${room.claimed[i]?" claimed":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}<small>${room.claimed[i]?"참여 중":"아직 안 열어봄"}${room.cheer&&room.cheer[i]?` · 받은 미션 ${room.cheer[i]}`:""}</small></span></button>`).join("");
+  $("whoGrid").innerHTML=order.map(({n,i})=>`<button type="button" class="who${room.claimed[i]?" claimed":""}" data-i="${i}"><i>${esc(first(n))}</i><span>${esc(n)}<small>${room.claimed[i]?"참여 중":"아직 안 열어봄"}</small></span></button>`).join("");
   $("whoGrid").querySelectorAll("button").forEach(b=>b.onclick=()=>showPin(+b.dataset.i));
   renderResult();
 }

@@ -98,7 +98,8 @@ async function publicView(st, room, now) {
   const out = {
     title: room.title, names: room.names, reveal: room.reveal, now,
     claimed: people.map(p => !!(p.pin || p.kid)),
-    cheer: room.names.map((_, i) => people[giverOf(room, i)]?.done.length || 0),
+    // 사람별 '받은 미션 수'는 짝을 짐작하게 해서(안 들어온 사람의 대상만 0 등) 공개 전엔 합계만 준다
+    cheerTotal: people.reduce((s, p) => s + p.done.length, 0),
   };
   if (now >= room.reveal) {
     out.result = room.names.map((n, i) => [n, room.names[room.target[i]]]);
